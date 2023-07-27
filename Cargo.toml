@@ -10,6 +10,7 @@ license.workspace = true
 readme.workspace = true
 repository.workspace = true
 version.workspace = true
+documentation = "https://docs.rs/html-node"
 
 
 [workspace]
