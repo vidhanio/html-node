@@ -59,32 +59,34 @@ fn pretty_printed() {
         </div>
     };
 
-    let expected = r#"<div>
+    let expected = "\
+<div>
     <h1>
         Shopping List
     </h1>
     <ul>
-        <li class="item">
-            <input type="checkbox" id="item-1">
-            <label for="item-1">
+        <li class=\"item\">
+            <input type=\"checkbox\" id=\"item-1\">
+            <label for=\"item-1\">
                 milk
             </label>
         </li>
-        <li class="item">
-            <input type="checkbox" id="item-2">
-            <label for="item-2">
+        <li class=\"item\">
+            <input type=\"checkbox\" id=\"item-2\">
+            <label for=\"item-2\">
                 eggs
             </label>
         </li>
-        <li class="item">
-            <input type="checkbox" id="item-3">
-            <label for="item-3">
+        <li class=\"item\">
+            <input type=\"checkbox\" id=\"item-3\">
+            <label for=\"item-3\">
                 bread
             </label>
         </li>
         
     </ul>
-</div>"#;
+</div>\
+";
 
     let pretty_html = format!("{html:#}");
 
