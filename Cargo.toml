@@ -31,4 +31,4 @@ members = ["./macro"]
 
 [dependencies]
 html-escape = "0.2"
-html-node-macro = { path = "./macro" }
+html-node-macro = { version = "0.1", path = "./macro" }
