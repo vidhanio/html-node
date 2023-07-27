@@ -24,7 +24,7 @@ let shopping_list_html = html! {
 <summary>HTML Output</summary>
 
 ```rust
-// the `#` flag enables pretty printing
+// the `#` flag enables pretty-printing
 println!("{shopping_list_html:#}");
 ```
 
