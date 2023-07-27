@@ -15,6 +15,7 @@ fn main() {
         </div>
     };
 
-    println!("safe: {safe_html}");
-    println!("unsafe: {unsafe_html}");
+    println!("--- safe ---\n{safe_html:#}");
+    println!();
+    println!("--- unsafe ---\n{unsafe_html:#}");
 }

@@ -3,13 +3,13 @@
 A HTML to node macro powered by [rstml](https://github.com/rs-tml/rstml).
 
 ```rust
-let grocery_list = vec!["milk", "eggs", "bread"];
+let shopping_list = vec!["milk", "eggs", "bread"];
 
 let shopping_list_html = html! {
     <div>
         <h1>Shopping List</h1>
         <ul>
-            { grocery_list.into_iter().zip(1..).map(|(item, i)| html! {
+            { shopping_list.into_iter().zip(1..).map(|(item, i)| html! {
                 <li class="item">
                     <input type="checkbox" id={format!("item-{i}")}>
                     <label for={format!("item-{i}")}>{text!("{item}")}</label>
@@ -20,7 +20,47 @@ let shopping_list_html = html! {
 };
 ```
 
-<details><summary>Output</summary>
+<details open>
+<summary>HTML Output</summary>
+
+```rust
+// the `#` flag enables pretty printing
+println!("{shopping_list_html:#}");
+```
+
+```html
+<div>
+    <h1>
+        Shopping List
+    </h1>
+    <ul>
+        <li class="item">
+            <input type="checkbox" id="item-1">
+            <label for="item-1">
+                milk
+            </label>
+        </li>
+        <li class="item">
+            <input type="checkbox" id="item-2">
+            <label for="item-2">
+                eggs
+            </label>
+        </li>
+        <li class="item">
+            <input type="checkbox" id="item-3">
+            <label for="item-3">
+                bread
+            </label>
+        </li>
+        
+    </ul>
+</div>
+```
+
+</details open>
+
+<details>
+<summary>Rust Output</summary>
 
 ```rust
 println!("{shopping_list_html:#?}");

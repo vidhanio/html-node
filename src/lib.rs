@@ -16,19 +16,21 @@
 //!
 //! See [the rstml docs](https://docs.rs/rstml/) for supported tags and syntax.
 //!
-//! # Example
+//! # Examples
+//!
+//! ## Basic
 //!
 //! ```rust
 //! use html_node::{html, text};
 //!
 //! # fn main () {
-//! let grocery_list = vec!["milk", "eggs", "bread"];
+//! let shopping_list = vec!["milk", "eggs", "bread"];
 //!
 //! let html = html! {
 //!     <div>
 //!         <h1>Shopping List</h1>
 //!         <ul>
-//!             { grocery_list.into_iter().zip(1..).map(|(item, i)| html! {
+//!             { shopping_list.into_iter().zip(1..).map(|(item, i)| html! {
 //!                 <li class="item">
 //!                     <input type="checkbox" id={format!("item-{i}")}>
 //!                     <label for={format!("item-{i}")}>{text!("{item}")}</label>
@@ -59,6 +61,49 @@
 //! ";
 //!
 //! assert_eq!(html.to_string(), expected);
+//! # }
+//! ```
+//!
+//! ## Pretty-Printing
+//!
+//! ```rust
+//! use html_node::{html, text};
+//!
+//! # fn main () {
+//! let html = html! {
+//!     <div>
+//!         <h1>Shopping List</h1>
+//!        <ul>
+//!            <li>Eggs</li>
+//!            <li>Milk</li>
+//!            <li>Bread</li>
+//!        </ul>
+//!     </div>
+//! };
+//!
+//! let expected = "\
+//! <div>
+//!     <h1>
+//!         Shopping List
+//!     </h1>
+//!     <ul>
+//!         <li>
+//!             Eggs
+//!         </li>
+//!         <li>
+//!             Milk
+//!         </li>
+//!         <li>
+//!             Bread
+//!         </li>
+//!     </ul>
+//! </div>\
+//! ";
+//!
+//! // note the `#` in the format string, which enables pretty-printing
+//! let formatted_html = format!("{html:#}");
+//!
+//! assert_eq!(formatted_html, expected);
 //! # }
 //! ```
 
@@ -151,12 +196,12 @@ where
 impl Display for Node {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match &self {
-            Self::Comment(comment) => write!(f, "{comment}"),
-            Self::Doctype(doctype) => write!(f, "{doctype}"),
-            Self::Fragment(fragment) => write!(f, "{fragment}"),
-            Self::Element(element) => write!(f, "{element}"),
-            Self::Text(text) => write!(f, "{text}"),
-            Self::UnsafeText(text) => write!(f, "{text}"),
+            Self::Comment(comment) => comment.fmt(f),
+            Self::Doctype(doctype) => doctype.fmt(f),
+            Self::Fragment(fragment) => fragment.fmt(f),
+            Self::Element(element) => element.fmt(f),
+            Self::Text(text) => text.fmt(f),
+            Self::UnsafeText(unsafe_text) => unsafe_text.fmt(f),
         }
     }
 }
@@ -224,11 +269,7 @@ pub struct Fragment {
 
 impl Display for Fragment {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        for child in &self.children {
-            write!(f, "{child}")?;
-        }
-
-        Ok(())
+        write_children(f, &self.children, false)
     }
 }
 
@@ -281,9 +322,7 @@ impl Display for Element {
         write!(f, ">")?;
 
         if let Some(children) = &self.children {
-            for child in children {
-                write!(f, "{child}")?;
-            }
+            write_children(f, children, true)?;
 
             write!(f, "</{}>", self.name)?;
         };
@@ -336,4 +375,27 @@ impl Display for UnsafeText {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.text)
     }
+}
+
+fn write_children(f: &mut Formatter<'_>, children: &[Node], increase_indent: bool) -> fmt::Result {
+    if f.alternate() {
+        if increase_indent {
+            writeln!(f)?;
+
+            for child in children {
+                // indent start of the child by 4 spaces, as well as any newlines
+                let child_str = format!("    {child:#}").replace('\n', "\n    ");
+                writeln!(f, "{child_str}")?;
+            }
+        } else {
+            for child in children {
+                writeln!(f, "{child:#}")?;
+            }
+        }
+    } else {
+        for child in children {
+            child.fmt(f)?;
+        }
+    }
+    Ok(())
 }
