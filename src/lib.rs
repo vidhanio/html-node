@@ -377,6 +377,12 @@ impl Display for UnsafeText {
     }
 }
 
+/// Writes the children of a node.
+///
+/// If the formatter is in alternate mode, then the children on their own lines.
+///
+/// If alternate mode is enabled and `increase_indent` is true, then the
+/// children are indented by 4 spaces.
 fn write_children(f: &mut Formatter<'_>, children: &[Node], increase_indent: bool) -> fmt::Result {
     if f.alternate() {
         if increase_indent {
