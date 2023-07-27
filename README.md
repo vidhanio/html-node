@@ -52,7 +52,6 @@ println!("{shopping_list_html:#}");
                 bread
             </label>
         </li>
-        
     </ul>
 </div>
 ```

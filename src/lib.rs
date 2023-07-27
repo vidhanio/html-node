@@ -269,7 +269,7 @@ pub struct Fragment {
 
 impl Display for Fragment {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write_children(f, &self.children, false)
+        write_children(f, &self.children, true)
     }
 }
 
@@ -322,7 +322,7 @@ impl Display for Element {
         write!(f, ">")?;
 
         if let Some(children) = &self.children {
-            write_children(f, children, true)?;
+            write_children(f, children, false)?;
 
             write!(f, "</{}>", self.name)?;
         };
@@ -379,24 +379,32 @@ impl Display for UnsafeText {
 
 /// Writes the children of a node.
 ///
-/// If the formatter is in alternate mode, then the children on their own lines.
+/// If the formatter is in alternate mode, then the children are put on their
+/// own lines.
 ///
-/// If alternate mode is enabled and `increase_indent` is true, then the
-/// children are indented by 4 spaces.
-fn write_children(f: &mut Formatter<'_>, children: &[Node], increase_indent: bool) -> fmt::Result {
+/// If alternate mode is enabled and `is_fragment` is false, then each line
+/// is indented by 4 spaces.
+fn write_children(f: &mut Formatter<'_>, children: &[Node], is_fragment: bool) -> fmt::Result {
     if f.alternate() {
-        if increase_indent {
-            writeln!(f)?;
+        let mut children_iter = children.iter();
 
-            for child in children {
-                // indent start of the child by 4 spaces, as well as any newlines
-                let child_str = format!("    {child:#}").replace('\n', "\n    ");
-                writeln!(f, "{child_str}")?;
+        if is_fragment {
+            if let Some(first_child) = children_iter.next() {
+                write!(f, "{first_child:#}")?;
+
+                for child in children_iter {
+                    write!(f, "\n{child:#}")?;
+                }
             }
         } else {
-            for child in children {
-                writeln!(f, "{child:#}")?;
+            for child_str in children_iter.map(|child| format!("{child:#}")) {
+                for line in child_str.lines() {
+                    write!(f, "\n    {line}")?;
+                }
             }
+
+            // exit inner block
+            writeln!(f)?;
         }
     } else {
         for child in children {

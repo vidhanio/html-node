@@ -59,6 +59,8 @@ fn pretty_printed() {
         </div>
     };
 
+    println!("--- pretty-printed ---\n{html:#}");
+
     let expected = "\
 <div>
     <h1>
@@ -83,7 +85,6 @@ fn pretty_printed() {
                 bread
             </label>
         </li>
-        
     </ul>
 </div>\
 ";
