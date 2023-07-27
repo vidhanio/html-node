@@ -1,0 +1,31 @@
+[package]
+name = "html-node"
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+documentation = "https://docs.rs/html-node"
+
+
+[dependencies]
+axum = { version = "0.6", optional = true, default-features = false }
+html-escape = "0.2"
+html-node-macro = { version = "0.1", path = "../html-node-macro" }
+
+
+[dev-dependencies]
+axum = "0.6"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[features]
+axum = ["dep:axum"]
+
+[[example]]
+name = "axum"
+required-features = ["axum"]

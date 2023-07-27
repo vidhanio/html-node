@@ -23,7 +23,6 @@
 //! ```rust
 //! use html_node::{html, text};
 //!
-//! # fn main () {
 //! let shopping_list = vec!["milk", "eggs", "bread"];
 //!
 //! let html = html! {
@@ -61,7 +60,6 @@
 //! ";
 //!
 //! assert_eq!(html.to_string(), expected);
-//! # }
 //! ```
 //!
 //! ## Pretty-Printing
@@ -69,7 +67,6 @@
 //! ```rust
 //! use html_node::{html, text};
 //!
-//! # fn main () {
 //! let html = html! {
 //!     <div>
 //!         <h1>Shopping List</h1>
@@ -104,7 +101,6 @@
 //! let formatted_html = format!("{html:#}");
 //!
 //! assert_eq!(formatted_html, expected);
-//! # }
 //! ```
 
 #![warn(clippy::cargo)]
@@ -182,6 +178,52 @@ pub enum Node {
     /// [`Node::UnsafeText`] is not escaped when rendered, and as such, can
     /// allow for XSS attacks. Use with caution!
     UnsafeText(UnsafeText),
+}
+
+impl Node {
+    /// Wraps the node in another DOM.
+    ///
+    /// This is useful for creating "layout" components, which can have elements
+    /// such as a navbar or footer and can just be wrapped around the content.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use html_node::{html, text, Node};
+    ///
+    /// fn layout(content: Node) -> Node {
+    ///     html! {
+    ///         <div>
+    ///             <nav>
+    ///                 <a href="/">Home</a>
+    ///             </nav>
+    ///             {content}
+    ///             <footer>
+    ///                 <p>by vidhan.</p>
+    ///             </footer>
+    ///         </div>
+    ///     }
+    /// }
+    ///
+    /// let page = text!("Hello, world!").wrap(layout);
+    ///
+    /// let expected = "\
+    /// <div>\
+    ///     <nav>\
+    ///         <a href=\"/\">Home</a>\
+    ///     </nav>\
+    ///     Hello, world!\
+    ///     <footer>\
+    ///         <p>by vidhan.</p>\
+    ///     </footer>\
+    /// </div>\
+    /// ";
+    ///
+    /// assert_eq!(page.to_string(), expected);
+    #[must_use]
+    pub fn wrap<L: FnOnce(Self) -> Self>(self, outer: L) -> Self {
+        outer(self)
+    }
 }
 
 impl<I> From<I> for Node
@@ -339,7 +381,7 @@ impl Display for Element {
 ///
 /// ```html
 /// <div>
-///    I'm a text node!
+///     I'm a text node!
 /// </div>
 #[derive(Clone, Debug)]
 pub struct Text {
@@ -347,7 +389,7 @@ pub struct Text {
     ///
     /// ```html
     /// <div>
-    ///    text
+    ///     text
     /// </div>
     pub text: String,
 }

@@ -1,24 +1,9 @@
-[package]
-name = "html-node"
-authors.workspace = true
-categories.workspace = true
-description.workspace = true
-edition.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-license.workspace = true
-readme.workspace = true
-repository.workspace = true
-version.workspace = true
-documentation = "https://docs.rs/html-node"
-
-
 [workspace]
-default-members = [".", "./macro"]
-members = ["./macro"]
+default-members = ["./html-node", "./html-node-macro"]
+members = ["./html-node", "./html-node-macro"]
 
     [workspace.package]
-    authors = ["Vidhan Bhatt <me@vidhan.io>", "vldm <me@vldm.cc>"]
+    authors = ["Vidhan Bhatt <me@vidhan.io>"]
     categories = ["template-engine"]
     description = "A html to node macro powered by rstml."
     edition = "2021"
@@ -28,12 +13,3 @@ members = ["./macro"]
     readme = "README.md"
     repository = "https://github.com/vidhanio/html-node"
     version = "0.1.11"
-
-
-[dependencies]
-axum = { version = "0.6", optional = true, default-features = false }
-html-escape = "0.2"
-html-node-macro = { version = "0.1", path = "./macro" }
-
-[features]
-axum = ["dep:axum"]
