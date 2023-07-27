@@ -1,0 +1,81 @@
+name: Continuous Integration
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  test:
+    name: Test
+
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: rust:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Execute tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --no-fail-fast
+
+  check:
+    name: Check
+
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: rust:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install `clippy`
+        run: rustup component add clippy
+
+      - name: Check code
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-features --all-targets -- -D warnings
+
+  format:
+    name: Format
+
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: rustlang/rust:nightly
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
