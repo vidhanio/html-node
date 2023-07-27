@@ -1,4 +1,4 @@
-//! Convert HTML to a [`Node`].
+//! A HTML to [`Node`] macro powered by [rstml](https://github.com/rs-tml/rstml).
 //!
 //! Values returned from braced blocks (`{ ... }`) are expected to return
 //! something that implements [`Into<Node>`]. This is already implemented for

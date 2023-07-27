@@ -1,3 +1,3 @@
 # html-node
 
-A type/procedural macro to turn HTML into a Rust representation of an HTML node.
+A HTML to node macro powered by [rstml](https://github.com/rs-tml/rstml).
