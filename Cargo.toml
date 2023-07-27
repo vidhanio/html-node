@@ -30,5 +30,9 @@ members = ["./macro"]
 
 
 [dependencies]
+axum = { version = "0.6", optional = true }
 html-escape = "0.2"
 html-node-macro = { version = "0.1", path = "./macro" }
+
+[features]
+axum = ["dep:axum"]

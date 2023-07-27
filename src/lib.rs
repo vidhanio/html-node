@@ -116,6 +116,8 @@
 
 mod macros;
 
+mod http;
+
 use std::fmt::{self, Display, Formatter};
 
 /// The [`html!`] macro.
