@@ -17,5 +17,230 @@ html! {
             }) }
         </ul>
     </div>
-};
+}
 ```
+
+<details><summary>Output</summary>
+
+```rust
+Element(
+    Element {
+        name: "div",
+        attributes: [],
+        children: Some(
+            [
+                Element(
+                    Element {
+                        name: "h1",
+                        attributes: [],
+                        children: Some(
+                            [
+                                Text(
+                                    Text {
+                                        text: "Shopping List",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Element(
+                    Element {
+                        name: "ul",
+                        attributes: [],
+                        children: Some(
+                            [
+                                Fragment(
+                                    Fragment {
+                                        children: [
+                                            Element(
+                                                Element {
+                                                    name: "li",
+                                                    attributes: [
+                                                        (
+                                                            "class",
+                                                            Some(
+                                                                "item",
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    children: Some(
+                                                        [
+                                                            Element(
+                                                                Element {
+                                                                    name: "input",
+                                                                    attributes: [
+                                                                        (
+                                                                            "type",
+                                                                            Some(
+                                                                                "checkbox",
+                                                                            ),
+                                                                        ),
+                                                                        (
+                                                                            "id",
+                                                                            Some(
+                                                                                "item-1",
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    children: None,
+                                                                },
+                                                            ),
+                                                            Element(
+                                                                Element {
+                                                                    name: "label",
+                                                                    attributes: [
+                                                                        (
+                                                                            "for",
+                                                                            Some(
+                                                                                "item-1",
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    children: Some(
+                                                                        [
+                                                                            Text(
+                                                                                Text {
+                                                                                    text: "milk",
+                                                                                },
+                                                                            ),
+                                                                        ],
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Element(
+                                                Element {
+                                                    name: "li",
+                                                    attributes: [
+                                                        (
+                                                            "class",
+                                                            Some(
+                                                                "item",
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    children: Some(
+                                                        [
+                                                            Element(
+                                                                Element {
+                                                                    name: "input",
+                                                                    attributes: [
+                                                                        (
+                                                                            "type",
+                                                                            Some(
+                                                                                "checkbox",
+                                                                            ),
+                                                                        ),
+                                                                        (
+                                                                            "id",
+                                                                            Some(
+                                                                                "item-2",
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    children: None,
+                                                                },
+                                                            ),
+                                                            Element(
+                                                                Element {
+                                                                    name: "label",
+                                                                    attributes: [
+                                                                        (
+                                                                            "for",
+                                                                            Some(
+                                                                                "item-2",
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    children: Some(
+                                                                        [
+                                                                            Text(
+                                                                                Text {
+                                                                                    text: "eggs",
+                                                                                },
+                                                                            ),
+                                                                        ],
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Element(
+                                                Element {
+                                                    name: "li",
+                                                    attributes: [
+                                                        (
+                                                            "class",
+                                                            Some(
+                                                                "item",
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    children: Some(
+                                                        [
+                                                            Element(
+                                                                Element {
+                                                                    name: "input",
+                                                                    attributes: [
+                                                                        (
+                                                                            "type",
+                                                                            Some(
+                                                                                "checkbox",
+                                                                            ),
+                                                                        ),
+                                                                        (
+                                                                            "id",
+                                                                            Some(
+                                                                                "item-3",
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    children: None,
+                                                                },
+                                                            ),
+                                                            Element(
+                                                                Element {
+                                                                    name: "label",
+                                                                    attributes: [
+                                                                        (
+                                                                            "for",
+                                                                            Some(
+                                                                                "item-3",
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    children: Some(
+                                                                        [
+                                                                            Text(
+                                                                                Text {
+                                                                                    text: "bread",
+                                                                                },
+                                                                            ),
+                                                                        ],
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+            ],
+        ),
+    },
+)
+```
+
+</details open>
