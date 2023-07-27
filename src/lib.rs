@@ -68,8 +68,6 @@
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
 #![warn(missing_docs)]
-#![allow(clippy::missing_errors_doc)]
-#![allow(clippy::module_name_repetitions)]
 
 mod macros;
 

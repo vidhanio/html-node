@@ -3,8 +3,6 @@
 #![warn(clippy::pedantic)]
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
-#![allow(clippy::missing_errors_doc)]
-#![allow(clippy::module_name_repetitions)]
 
 mod node_handlers;
 
