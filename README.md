@@ -5,7 +5,7 @@ A HTML to node macro powered by [rstml](https://github.com/rs-tml/rstml).
 ```rust
 let grocery_list = vec!["milk", "eggs", "bread"];
 
-html! {
+let shopping_list_html = html! {
     <div>
         <h1>Shopping List</h1>
         <ul>
@@ -17,10 +17,14 @@ html! {
             }) }
         </ul>
     </div>
-}
+};
 ```
 
 <details><summary>Output</summary>
+
+```rust
+println!("{shopping_list_html:#?}");
+```
 
 ```rust
 Element(
