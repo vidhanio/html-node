@@ -12,23 +12,40 @@
 //!
 //! // defines a custom element named `CustomElement`, with the specified attributes.
 //! // underscores in attributes get converted to and from hyphens in the
-//! // `typed::html!` macro and rendering to a string.
+//! // `typed::html!` macro and rendering.
+//!
+//! // note that global attributes like `id` will be pre-defined when
+//! // using the `typed::element!` macro.
+//!
+//! #[derive(Clone, Debug)]
+//! struct Location {
+//!     x: i32,
+//!     y: i32,
+//! }
+//!
+//! impl std::fmt::Display for Location {
+//!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//!         write!(f, "{},{}", self.x, self.y)
+//!     }
+//! }
+//!
 //! typed::element! {
 //!     CustomElement("custom-element") {
-//!         custom_attr,
+//!         custom_attr, // implictly typed as a `String`
+//!         location: Location,
 //!     }
 //! }
 //!
 //! // creates a normal `Node`, but checks types at compile-time!
 //! let html = typed::html! {
 //!     <div id="container">
-//!         <CustomElement id="el" custom-attr="test" />
+//!         <CustomElement id="el" custom-attr="test" location=Location { x: 1, y: 2 } />
 //!     </div>
 //! };
 //!
 //! assert_eq!(
 //!     html.to_string(),
-//!     r#"<div id="container"><custom-element id="el" custom-attr="test"></custom-element></div>"#,
+//!     r#"<div id="container"><custom-element id="el" custom-attr="test" location="1,2"></custom-element></div>"#,
 //! );
 
 #[allow(clippy::module_name_repetitions)]
