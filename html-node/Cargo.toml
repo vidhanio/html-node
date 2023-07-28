@@ -14,15 +14,12 @@ documentation = "https://docs.rs/html-node"
 
     [package.metadata.docs.rs]
     all-features = true
+    rustdoc-args = ["--cfg", "docsrs"]
 
 
 [[example]]
 name = "axum"
 required-features = ["axum"]
-
-[[example]]
-name = "typed"
-required-features = ["typed"]
 
 [dependencies]
 html-node-core = { version = "0.1", path = "../html-node-core" }

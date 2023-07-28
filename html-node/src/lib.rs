@@ -109,53 +109,16 @@
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
 #![warn(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 mod macros;
+#[cfg(feature = "typed")]
+pub mod typed;
 
-pub use html_node_core::*;
+pub use html_node_core::{Comment, Doctype, Element, Fragment, Node, Text, UnsafeText};
 /// The HTML to [`Node`] macro.
 ///
 /// See the [crate-level documentation](crate) for more information.
 pub use html_node_macro::html;
-/// The text to [`Node::Text`] macro which checks element/attribute types.
-///
-/// # Examples
-///
-/// ## Passing Type-Checking
-///
-/// ```rust
-/// use html_node::{html, text, typed_html, typed::elements::div};
-///
-/// let html = typed_html! {
-///     <div class="cool" id="hello-world" data-my-attr="hello" aria-label="world">
-///         {text!("Hello, world!")}
-///     </div>
-/// };
-///
-/// let expected = "\
-/// <div class=\"cool\" id=\"hello-world\" data-my-attr=\"hello\" aria-label=\"world\">\
-///     Hello, world!\
-/// </div>\
-/// ";
-///
-/// assert_eq!(html.to_string(), expected);
-/// ```
-///
-/// ## Failing Type-Checking
-///
-/// ```compile_fail
-/// use html_node::{html, text, typed_html, typed::elements::div};
-///                                      // ^^^^^^^^^^^^^^^^^^^^
-///                                      // must import to get definition of `div` in macros.
-///                                      // can also `use html_node::typed::elements::*;`
-///
-/// let html = typed_html! {
-///     // ERROR: struct `html_node::typed::elements::DivAttributes` has no field named `my_attr`
-///     <div class="cool" id="hello-world" my-attr="hello">
-///         {text!("Hello, world!")}
-///     </div>
-/// };
-/// ```
-pub use html_node_macro::typed_html;
 
 pub use self::macros::*;

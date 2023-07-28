@@ -6,9 +6,11 @@
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
 #![warn(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 mod http;
 
+#[allow(missing_docs)]
 #[cfg(feature = "typed")]
 pub mod typed;
 

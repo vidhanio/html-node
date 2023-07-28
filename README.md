@@ -6,7 +6,8 @@ A HTML to node macro powered by [rstml](https://github.com/rs-tml/rstml).
 
 - Text escaping
 - Pretty-printing
-- NEW: type-safe elements and attributes! ([example](/html-node/examples/typed.rs))
+- type-safe elements and attributes
+  - completely optional, and can be mixed with untyped elements when needed!
 
 ## Example
 

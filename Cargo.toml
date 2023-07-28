@@ -1,6 +1,7 @@
 [workspace]
 default-members = ["./html-node*"]
 members = ["./html-node*"]
+resolver = "2"
 
     [workspace.package]
     authors = ["Vidhan Bhatt <me@vidhan.io>"]
