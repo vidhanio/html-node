@@ -55,7 +55,7 @@ macro_rules! typed_elements {
 #[allow(missing_docs)]
 #[macro_export]
 macro_rules! typed_element {
-    ($vis:vis $ElementName:ident $(($name:literal))? $([$AttributeName:ident])? $({ $($attribute:ident),* $(,)? })?) => {
+    ($vis:vis $ElementName:ident $(($name:literal))? $([$AttributeName:ident])? $({ $($attribute:ident $(: $atype:ty)?),* $(,)? })?) => {
         $crate::typed_attributes!{
             $vis $ElementName $([$vis $AttributeName])? $({
                 accesskey,
@@ -89,7 +89,7 @@ macro_rules! typed_element {
                 title,
                 translate,
                 virtualkeyboardpolicy,
-                $($attribute),*
+                $($attribute $(: $atype)?),*
             })?
         }
 
@@ -140,14 +140,14 @@ macro_rules! typed_element {
 macro_rules! typed_attributes {
     {
         $($vise:vis $ElementName:ident)? $([$visa:vis $AttributeName:ident])? {
-            $($attribute:ident),* $(,)?
+            $($attribute:ident $(: $atype:ty)?),* $(,)?
         }
     } => {
-        $crate::typed_attributes!(@STRUCT $($vise $ElementName)? $([$visa $AttributeName])? { $($attribute),* });
+        $crate::typed_attributes!(@STRUCT $($vise $ElementName)? $([$visa $AttributeName])? { $($attribute $(: $atype)?),* });
 
         impl $crate::typed::TypedAttributes for $crate::typed_attributes!(@NAME $($ElementName)? $([$AttributeName])?) {
             fn into_attributes(self) -> ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)> {
-                [$((::std::stringify!($attribute), self.$attribute)),*]
+                [$((::std::stringify!($attribute), self.$attribute.map(|opt| opt.map(|a| ::std::string::ToString::to_string(&a))))),*]
                     .into_iter()
                     .flat_map(|(key, maybe_value)| {
                         maybe_value.map(|value| (key.strip_prefix("r#").unwrap_or(key).replace('_', "-"), value))
@@ -165,26 +165,28 @@ macro_rules! typed_attributes {
     };
     {
         @STRUCT $vis:vis $ElementName:ident {
-            $($attribute:ident),* $(,)?
+            $($attribute:ident $(:$atype:ty)?),* $(,)?
         }
     } => {
         $crate::typed::paste! {
             #[derive(::std::fmt::Debug, ::std::clone::Clone, ::std::default::Default)]
             #[allow(missing_docs)]
             $vis struct [< $ElementName:camel Attributes >] {
-                $($vis $attribute: ::std::option::Option<::std::option::Option<::std::string::String>>,)*
+                $($vis $attribute: ::std::option::Option<::std::option::Option<$crate::typed_attributes!(@ATTR_TYPE $($atype)?)>>,)*
             }
         }
     };
     {
         @STRUCT $_vis:vis $ElementName:ident [$vis:vis $AttributeName:ident] {
-            $($attribute:ident),* $(,)?
+            $($attribute:ident $(: $atype:ty)?),* $(,)?
         }
     } => {
         #[derive(::std::fmt::Debug, ::std::clone::Clone, ::std::default::Default)]
         #[allow(missing_docs)]
         $vis struct $AttributeName {
-            $($vis $attribute: ::std::option::Option<::std::option::Option<::std::string::String>>,)*
+            $($vis $attribute: ::std::option::Option<::std::option::Option<$crate::typed_attributes!(@ATTR_TYPE $($atype)?)>>,)*
         }
     };
+    (@ATTR_TYPE $atype:ty) => {$atype};
+    (@ATTR_TYPE) => {::std::string::String};
 }

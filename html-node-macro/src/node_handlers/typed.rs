@@ -136,7 +136,7 @@ fn handle_typed_attribute(attribute: &KeyedAttribute) -> (AttrType, Option<Diagn
         |value| {
             quote! {
                 ::std::option::Option::Some(
-                    ::std::convert::Into::<::std::string::String>::into(#value),
+                    ::std::convert::Into::into(#value),
                 )
             }
         },
