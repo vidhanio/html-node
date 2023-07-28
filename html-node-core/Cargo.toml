@@ -13,7 +13,6 @@ version.workspace = true
 
 [dependencies]
 axum = { version = "0.6", optional = true, default-features = false }
-html-node-macro = { version = "0.1", path = "../html-node-macro" }
 
 html-escape = "0.2"
 
