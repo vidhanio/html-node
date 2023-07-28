@@ -46,17 +46,15 @@ pub fn handle_element(
             quote! {
                 {
                     type ElementAttributes = <#name as ::html_node::typed::TypedElement>::Attributes;
-                    ::html_node::Node::from_typed::<#name>(
-                        <#name as ::html_node::typed::TypedElement>::from_attributes(
-                            ElementAttributes {
-                                #(#normals,)*
-                                ..::std::default::Default::default()
-                            },
-                            ::std::vec![#(#datas,)*],
-                            ::std::vec![#(#arias,)*],
-                        ),
-                        #children,
-                    )
+                    <#name as ::html_node::typed::TypedElement>::from_attributes(
+                        #[allow(clippy::needless_update)]
+                        ElementAttributes {
+                            #(#normals,)*
+                            ..::std::default::Default::default()
+                        },
+                        ::std::vec![#(#datas,)*],
+                        ::std::vec![#(#arias,)*],
+                    ).into_node(#children)
                 }
             }
         },
@@ -92,7 +90,7 @@ fn handle_typed_attribute(attribute: &KeyedAttribute) -> (AttrType, Option<Diagn
                                 .map(|pair| match pair {
                                     Pair::Punctuated(ident, punct) => {
                                         if punct.as_char() == '-' {
-                                            Ok(format!("{ident}_)"))
+                                            Ok(format!("{ident}_"))
                                         } else {
                                             Err(punct.span().error("only hyphens can be converted to underscores in attribute names"))
                                         }

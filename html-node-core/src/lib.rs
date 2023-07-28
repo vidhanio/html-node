@@ -76,10 +76,10 @@ impl Node {
         children: Vec::new(),
     });
 
-    /// Create a new [`Node::Element`] from a [`TypedElement`].
+    /// Create a new [`Node`] from a [`TypedElement`].
     #[cfg(feature = "typed")]
     pub fn from_typed<E: TypedElement>(element: E, children: Option<Vec<Self>>) -> Self {
-        Self::Element(Element::from_typed(element, children))
+        element.into_node(children)
     }
 }
 
@@ -212,11 +212,7 @@ impl Element {
     /// Create a new [`Element`] from a [`TypedElement`].
     #[cfg(feature = "typed")]
     pub fn from_typed<E: TypedElement>(element: E, children: Option<Vec<Node>>) -> Self {
-        Self {
-            name: E::NAME.into(),
-            attributes: element.into_attribute_list(),
-            children,
-        }
+        element.into_element(children)
     }
 }
 

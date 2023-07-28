@@ -16,6 +16,10 @@ documentation = "https://docs.rs/html-node"
 name = "axum"
 required-features = ["axum"]
 
+[[example]]
+name = "typed"
+required-features = ["typed"]
+
 [dependencies]
 html-node-core = { version = "0.1", path = "../html-node-core" }
 html-node-macro = { version = "0.1", path = "../html-node-macro" }

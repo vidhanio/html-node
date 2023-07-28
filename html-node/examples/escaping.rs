@@ -1,10 +1,10 @@
-use html_node::{html, text, typed::*, typed_html, unsafe_text};
+use html_node::{html, text, unsafe_text};
 
 fn main() {
     let evil = "</script><script>alert('evil')</script>";
 
-    let safe_html = typed_html! {
-        <div data-hx-boost="true">
+    let safe_html = html! {
+        <div>
             <p>{text!("Hello, world!")}</p>
         </div>
     };
