@@ -12,6 +12,10 @@ repository.workspace = true
 version.workspace = true
 documentation = "https://docs.rs/html-node"
 
+    [package.metadata.docs.rs]
+    all-features = true
+
+
 [[example]]
 name = "axum"
 required-features = ["axum"]

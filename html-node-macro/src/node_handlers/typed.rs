@@ -46,15 +46,18 @@ pub fn handle_element(
             quote! {
                 {
                     type ElementAttributes = <#name as ::html_node::typed::TypedElement>::Attributes;
-                    <#name as ::html_node::typed::TypedElement>::from_attributes(
-                        #[allow(clippy::needless_update)]
-                        ElementAttributes {
-                            #(#normals,)*
-                            ..::std::default::Default::default()
-                        },
-                        ::std::vec![#(#datas,)*],
-                        ::std::vec![#(#arias,)*],
-                    ).into_node(#children)
+                    <#name as ::html_node::typed::TypedElement>::into_node(
+                        <#name as ::html_node::typed::TypedElement>::from_attributes(
+                            #[allow(clippy::needless_update)]
+                            ElementAttributes {
+                                #(#normals,)*
+                                ..::std::default::Default::default()
+                            },
+                            ::std::vec![#(#datas,)*],
+                            ::std::vec![#(#arias,)*],
+                        ),
+                        #children
+                    )
                 }
             }
         },
