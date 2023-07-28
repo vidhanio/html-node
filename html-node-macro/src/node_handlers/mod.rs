@@ -101,7 +101,7 @@ pub fn handle_element_untyped(
                         (
                             #key,
                             ::std::option::Option::Some(
-                                ::std::convert::Into::<::std::string::String>::into(#value),
+                                ::std::string::ToString::to_string(&#value),
                             ),
                         )
                     }
