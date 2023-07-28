@@ -1,6 +1,6 @@
 [workspace]
-default-members = ["./html-node", "./html-node-macro"]
-members = ["./html-node", "./html-node-macro"]
+default-members = ["./html-node*"]
+members = ["./html-node*"]
 
     [workspace.package]
     authors = ["Vidhan Bhatt <me@vidhan.io>"]

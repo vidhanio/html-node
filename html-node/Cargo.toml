@@ -12,10 +12,12 @@ repository.workspace = true
 version.workspace = true
 documentation = "https://docs.rs/html-node"
 
+[[example]]
+name = "axum"
+required-features = ["axum"]
 
 [dependencies]
-axum = { version = "0.6", optional = true, default-features = false }
-html-escape = "0.2"
+html-node-core = { version = "0.1", path = "../html-node-core" }
 html-node-macro = { version = "0.1", path = "../html-node-macro" }
 
 
@@ -24,8 +26,5 @@ axum = "0.6"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [features]
-axum = ["dep:axum"]
-
-[[example]]
-name = "axum"
-required-features = ["axum"]
+axum = ["html-node-core/axum"]
+typed = ["html-node-core/typed", "html-node-macro/typed"]

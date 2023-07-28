@@ -54,7 +54,7 @@ fn layout(content: Node) -> Node {
 }
 
 async fn home() -> Node {
-    html! {
+    layout(html! {
         <h1>"home"</h1>
         "welcome to my site!"
 
@@ -64,23 +64,20 @@ async fn home() -> Node {
             <input id="name" name="name" type="text" />
             <button type="submit">"submit"</button>
         </form>
-    }
-    .wrap(layout)
+    })
 }
 
 async fn about() -> Node {
-    html! {
+    layout(html! {
         <h1>"about"</h1>
         "my name is vidhan, and i'm a rust developer and a university student."
-    }
-    .wrap(layout)
+    })
 }
 
 async fn contact() -> Node {
-    html! {
+    layout(html! {
         <h1>"contact"</h1>
-    }
-    .wrap(layout)
+    })
 }
 
 async fn greet(Query(params): Query<HashMap<String, String>>) -> Node {
@@ -89,8 +86,7 @@ async fn greet(Query(params): Query<HashMap<String, String>>) -> Node {
         .map(|name| name.as_str())
         .unwrap_or("stranger");
 
-    html! {
+    layout(html! {
         <h1>{text!("hello, {name}")}!</h1>
-    }
-    .wrap(layout)
+    })
 }
