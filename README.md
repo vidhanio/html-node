@@ -2,6 +2,14 @@
 
 A HTML to node macro powered by [rstml](https://github.com/rs-tml/rstml).
 
+## Features
+
+- Text escaping
+- Pretty-printing
+- NEW: type-safe elements and attributes! ([example](/html-node/examples/typed.rs))
+
+## Example
+
 ```rust
 let shopping_list = vec!["milk", "eggs", "bread"];
 
