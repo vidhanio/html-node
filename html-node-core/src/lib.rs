@@ -85,13 +85,14 @@ impl Node {
     }
 }
 
-impl<I> From<I> for Node
+impl<I, N> From<I> for Node
 where
-    I: IntoIterator<Item = Self>,
+    I: IntoIterator<Item = N>,
+    N: Into<Self>,
 {
     fn from(iter: I) -> Self {
         Self::Fragment(Fragment {
-            children: iter.into_iter().collect(),
+            children: iter.into_iter().map(Into::into).collect(),
         })
     }
 }
