@@ -10,7 +10,7 @@ use rstml::node::{
     KeyedAttribute, NodeAttribute, NodeBlock, NodeComment, NodeDoctype, NodeElement, NodeFragment,
     NodeName, NodeText, RawText,
 };
-use syn::{spanned::Spanned, Type};
+use syn::{spanned::Spanned, Expr, ExprCast, Type};
 
 use crate::tokenize_nodes;
 
@@ -94,18 +94,27 @@ pub fn handle_element_untyped(
 
             let key = quote!(::std::convert::Into::<::std::string::String>::into(#key));
 
-            let attribute_tokens = attribute.value().map_or_else(
+            let value = attribute.value().map(|value| match value {
+                Expr::Cast(ExprCast { expr, ty, .. }) => (&**expr, Some(ty)),
+                _ => (value, None),
+            });
+
+            let attribute_tokens = value.map_or_else(
                 || quote!((#key, ::std::option::Option::None)),
-                |value| {
-                    quote! {
+                |(value, ty)| ty.map_or_else(
+                    || quote!{
                         (
                             #key,
-                            ::std::option::Option::Some(
-                                ::std::string::ToString::to_string(&#value),
-                            ),
+                            ::std::option::Option::Some(::std::string::ToString::to_string(&#value)),
                         )
-                    }
-                },
+                    },
+                    |ty| quote!{
+                        (
+                            #key,
+                            ::std::option::Option::<#ty>::from(#value).map(|v| ::std::string::ToString::to_string(&v)),
+                        )
+                    },
+                ),
             );
 
             (attribute_tokens, None)
