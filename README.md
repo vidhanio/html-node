@@ -6,7 +6,7 @@ A HTML to node macro powered by [rstml](https://github.com/rs-tml/rstml).
 
 - Text escaping
 - Pretty-printing
-- T``ype-safe elements and attributes
+- Customizable compile-time type-checked elements and attributes ([docs](https://docs.rs/html-node/latest/html_node/typed/index.html))
   - completely optional, and can be mixed with untyped elements when needed!
 
 ## Example
