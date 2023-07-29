@@ -10,13 +10,6 @@
 //!                           // the current scope.
 //!                           // (can also use `elements::div`, etc.)
 //!
-//! // defines a custom element named `CustomElement`, with the specified attributes.
-//! // underscores in attributes get converted to and from hyphens in the
-//! // `typed::html!` macro and rendering.
-//!
-//! // note that global attributes like `id` will be pre-defined when
-//! // using the `typed::element!` macro.
-//!
 //! #[derive(Clone, Debug)]
 //! struct Location {
 //!     x: i32,
@@ -29,6 +22,13 @@
 //!     }
 //! }
 //!
+//! // defines a custom element named `CustomElement`, with the specified attributes.
+//! // underscores in attributes get converted to and from hyphens in the
+//! // `typed::html!` macro and rendering.
+//!
+//! // note that global attributes like `id` will be pre-defined when
+//! // using the `typed::element!` macro.
+//!
 //! typed::element! {
 //!     CustomElement("custom-element") {
 //!         custom_attr, // implictly typed as a `String`
@@ -36,16 +36,34 @@
 //!     }
 //! }
 //!
+//! typed::attributes! {
+//!     [TestAttrs] {
+//!         test_val: i32,
+//!     }
+//! }
+//!
 //! // creates a normal `Node`, but checks types at compile-time!
-//! let html = typed::html! {
+//! let html = typed::html! { (test: TestAttrs, any)
+//!                        // ^^^^^^^^^^^^^^^^^^^^^^^^ these are extension attributes.
+//!                        // they are not required, but allow you to specify extra attributes
+//!                        // which will be available within this macro invocation.
+//!                        // those of the form `attr-prefix: Type` will be type checked, and
+//!                        // those with just `attr-prefix` will be considered "catch-all" prefixes
+//!                        // allowing any attribute with that prefix to be specified.
+//!                        // `data-*` and `aria-*` are predefined as catch-all prefixes.
 //!     <div id="container">
-//!         <CustomElement id="el" custom-attr="test" location=Location { x: 1, y: 2 } />
+//!         <CustomElement test-val=42 any-whatever data-cool=true id="el" custom-attr="test" location=Location { x: 1, y: 2 } />
 //!     </div>
 //! };
 //!
 //! assert_eq!(
 //!     html.to_string(),
-//!     r#"<div id="container"><custom-element id="el" custom-attr="test" location="1,2"></custom-element></div>"#,
+//!     "\
+//!         <div id=\"container\">\
+//!             <custom-element id=\"el\" custom-attr=\"test\" location=\"1,2\" test-val=\"42\" any-whatever data-cool=\"true\">\
+//!             </custom-element>\
+//!         </div>\
+//!     ",
 //! );
 
 #[allow(clippy::module_name_repetitions)]

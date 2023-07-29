@@ -24,6 +24,7 @@ proc-macro2-diagnostics = { version = "0.10", default-features = false }
 quote = "1"
 rstml = { version = "0.11", default-features = false }
 syn = "2"
+syn_derive = { version = "0.1", optional = true }
 
 [features]
-typed = []
+typed = ["dep:syn_derive"]

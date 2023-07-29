@@ -14,7 +14,10 @@
 //! [`ToString`]), so you can turn it into a string representation easily using
 //! [`Node::to_string()`][ToString::to_string].
 //!
-//! See [the rstml docs](https://docs.rs/rstml/) for supported tags and syntax.
+//! # Typed HTML
+//!
+//! This crate also supports typed HTML, which is all nested into the [`typed`]
+//! module. note that the feature `typed` must be enabled to use it.
 //!
 //! # Examples
 //!

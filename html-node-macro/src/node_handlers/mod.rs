@@ -1,16 +1,16 @@
 #[cfg(feature = "typed")]
 mod typed;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
-use proc_macro2::{Literal, TokenStream as TokenStream2};
+use proc_macro2::{Ident, Literal, TokenStream as TokenStream2};
 use proc_macro2_diagnostics::{Diagnostic, SpanDiagnosticExt};
 use quote::{quote, ToTokens};
 use rstml::node::{
     KeyedAttribute, NodeAttribute, NodeBlock, NodeComment, NodeDoctype, NodeElement, NodeFragment,
     NodeName, NodeText, RawText,
 };
-use syn::spanned::Spanned;
+use syn::{spanned::Spanned, Type};
 
 use crate::tokenize_nodes;
 
@@ -40,10 +40,11 @@ pub fn handle_doctype(doctype: &NodeDoctype) -> TokenStream2 {
 
 pub fn handle_fragment(
     void_elements: &HashSet<&str>,
-    typed: bool,
+    extensions: Option<&HashMap<Ident, Option<Type>>>,
     fragment: &NodeFragment,
 ) -> (TokenStream2, Vec<Diagnostic>) {
-    let (inner_nodes, inner_diagnostics) = tokenize_nodes(void_elements, typed, &fragment.children);
+    let (inner_nodes, inner_diagnostics) =
+        tokenize_nodes(void_elements, extensions, &fragment.children);
 
     let children = quote!(::std::vec![#(#inner_nodes),*]);
 
@@ -61,14 +62,13 @@ pub fn handle_fragment(
 
 pub fn handle_element(
     void_elements: &HashSet<&str>,
-    typed: bool,
+    extensions: Option<&HashMap<Ident, Option<Type>>>,
     element: &NodeElement,
 ) -> (TokenStream2, Vec<Diagnostic>) {
-    if typed {
-        typed::handle_element(void_elements, element)
-    } else {
-        handle_element_untyped(void_elements, element)
-    }
+    extensions.map_or_else(
+        || handle_element_untyped(void_elements, element),
+        |extensions| typed::handle_element(void_elements, extensions, element),
+    )
 }
 
 pub fn handle_element_untyped(
@@ -124,17 +124,17 @@ pub fn handle_element_untyped(
             }
         },
         void_elements,
-        false,
+        None,
         element,
     )
 }
 
 fn handle_element_inner<T>(
-    handle_block: fn(&NodeBlock) -> (T, Option<Diagnostic>),
-    handle_keyed: fn(&KeyedAttribute) -> (T, Option<Diagnostic>),
-    to_element: fn(&NodeElement, Vec<T>, TokenStream2) -> TokenStream2,
+    handle_block: impl Fn(&NodeBlock) -> (T, Option<Diagnostic>),
+    handle_keyed: impl Fn(&KeyedAttribute) -> (T, Option<Diagnostic>),
+    to_element: impl Fn(&NodeElement, Vec<T>, TokenStream2) -> TokenStream2,
     void_elements: &HashSet<&str>,
-    typed: bool,
+    extensions: Option<&HashMap<Ident, Option<Type>>>,
     element: &NodeElement,
 ) -> (TokenStream2, Vec<Diagnostic>) {
     let (attributes, attribute_diagnostics) = element
@@ -160,7 +160,7 @@ fn handle_element_inner<T>(
         (quote!(::std::option::Option::None), diagnostic)
     } else {
         let (inner_nodes, inner_diagnostics) =
-            tokenize_nodes(void_elements, typed, &element.children);
+            tokenize_nodes(void_elements, extensions, &element.children);
 
         (
             quote!(::std::option::Option::Some(::std::vec![#(#inner_nodes),*])),
@@ -224,11 +224,16 @@ fn node_name_to_literal(node_name: &NodeName) -> TokenStream2 {
 
 #[cfg(not(feature = "typed"))]
 mod typed {
-    use std::collections::HashSet;
+    use std::collections::{HashMap, HashSet};
 
     use rstml::node::NodeElement;
+    use syn::{Ident, Type};
 
-    pub fn handle_element(_void_elements: &HashSet<&str>, _element: &NodeElement) -> ! {
+    pub fn handle_element(
+        _void_elements: &HashSet<&str>,
+        _extensions: &HashMap<Ident, Option<Type>>,
+        _element: &NodeElement,
+    ) -> ! {
         unreachable!("`typed::handle_element` should be unreachable without the `typed` feature")
     }
 }

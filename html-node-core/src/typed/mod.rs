@@ -18,8 +18,7 @@ pub trait TypedElement: Default {
     /// Create an element from its attributes.
     fn from_attributes(
         attributes: Self::Attributes,
-        data_attributes: Vec<(String, Option<String>)>,
-        aria_attributes: Vec<(String, Option<String>)>,
+        other_attributes: Vec<(String, Option<String>)>,
     ) -> Self;
 
     /// Convert the typed element into an [`Element`].
@@ -57,7 +56,7 @@ macro_rules! typed_elements {
 macro_rules! typed_element {
     ($vis:vis $ElementName:ident $(($name:literal))? $([$AttributeName:ident])? $({ $($attribute:ident $(: $atype:ty)?),* $(,)? })?) => {
         $crate::typed_attributes!{
-            $vis $ElementName $([$vis $AttributeName])? $({
+            ($vis $ElementName) $([$vis $AttributeName])? $({
                 accesskey,
                 autocapitalize,
                 autofocus,
@@ -98,26 +97,23 @@ macro_rules! typed_element {
         #[allow(missing_docs)]
         $vis struct $ElementName {
             $vis attributes: <Self as $crate::typed::TypedElement>::Attributes,
-            $vis data_attributes: ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)>,
-            $vis aria_attributes: ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)>,
+            $vis other_attributes: ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)>,
         }
 
         impl $crate::typed::TypedElement for $ElementName {
             const NAME: &'static str = $crate::typed_element!(@NAME_STR $ElementName$(($name))?);
-            type Attributes = $crate::typed_attributes!(@NAME $ElementName $([$AttributeName])?);
+            type Attributes = $crate::typed_attributes!(@NAME ($ElementName) $([$AttributeName])?);
 
             fn from_attributes(
                 attributes: Self::Attributes,
-                data_attributes: ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)>,
-                aria_attributes: ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)>,
+                other_attributes: ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)>,
             ) -> Self {
-                Self { attributes, data_attributes, aria_attributes }
+                Self { attributes, other_attributes }
             }
 
             fn into_element(mut self, children: ::std::option::Option<::std::vec::Vec<$crate::Node>>) -> $crate::Element {
                 let mut attributes = $crate::typed::TypedAttributes::into_attributes(self.attributes);
-                attributes.append(&mut self.data_attributes);
-                attributes.append(&mut self.aria_attributes);
+                attributes.append(&mut self.other_attributes);
 
                 $crate::Element {
                     name: Self::NAME.into(),
@@ -139,13 +135,13 @@ macro_rules! typed_element {
 #[macro_export]
 macro_rules! typed_attributes {
     {
-        $($vise:vis $ElementName:ident)? $([$visa:vis $AttributeName:ident])? {
+        $(($vise:vis $ElementName:ident))? $([$visa:vis $AttributeName:ident])? {
             $($attribute:ident $(: $atype:ty)?),* $(,)?
         }
     } => {
-        $crate::typed_attributes!(@STRUCT $($vise $ElementName)? $([$visa $AttributeName])? { $($attribute $(: $atype)?),* });
+        $crate::typed_attributes!(@STRUCT $(($vise $ElementName))? $([$visa $AttributeName])? { $($attribute $(: $atype)?),* });
 
-        impl $crate::typed::TypedAttributes for $crate::typed_attributes!(@NAME $($ElementName)? $([$AttributeName])?) {
+        impl $crate::typed::TypedAttributes for $crate::typed_attributes!(@NAME $(($ElementName))? $([$AttributeName])?) {
             fn into_attributes(self) -> ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)> {
                 [$((::std::stringify!($attribute), self.$attribute.map(|opt| opt.map(|a| ::std::string::ToString::to_string(&a))))),*]
                     .into_iter()
@@ -156,15 +152,15 @@ macro_rules! typed_attributes {
             }
         }
     };
-    ($($_vise:vis $_ElementName:ident)? $([$_visa:vis $_AttributeName:ident])?) => {};
-    (@NAME $ElementName:ident) => {
+    (($_vise:vis $_ElementName:ident) $([$_visa:vis $_AttributeName:ident])?) => {};
+    (@NAME ($ElementName:ident)) => {
         $crate::typed::paste!([< $ElementName:camel Attributes >])
     };
-    (@NAME $ElementName:ident [$AttributeName:ident]) => {
+    (@NAME $(($ElementName:ident))? [$AttributeName:ident]) => {
         $AttributeName
     };
     {
-        @STRUCT $vis:vis $ElementName:ident {
+        @STRUCT ($vis:vis $ElementName:ident) {
             $($attribute:ident $(:$atype:ty)?),* $(,)?
         }
     } => {
@@ -177,7 +173,7 @@ macro_rules! typed_attributes {
         }
     };
     {
-        @STRUCT $_vis:vis $ElementName:ident [$vis:vis $AttributeName:ident] {
+        @STRUCT $(($_vis:vis $ElementName:ident))? [$vis:vis $AttributeName:ident] {
             $($attribute:ident $(: $atype:ty)?),* $(,)?
         }
     } => {
