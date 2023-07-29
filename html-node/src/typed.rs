@@ -44,7 +44,7 @@
 //!
 //! // creates a normal `Node`, but checks types at compile-time!
 //! let html = typed::html! { (test: TestAttrs, any)
-//!                        // ^^^^^^^^^^^^^^^^^^^^^^^^ these are extension attributes.
+//!                        // ^^^^^^^^^^^^^^^^^^^^^^ these are extension attributes.
 //!                        // they are not required, but allow you to specify extra attributes
 //!                        // which will be available within this macro invocation.
 //!                        // those of the form `attr-prefix: Type` will be type checked, and
