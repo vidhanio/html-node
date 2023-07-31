@@ -26,8 +26,8 @@ name = "typed_custom_attributes"
 required-features = ["typed"]
 
 [dependencies]
-html-node-core = { version = "0.1", path = "../html-node-core" }
-html-node-macro = { version = "0.1", path = "../html-node-macro" }
+html-node-core = { version = "0.2", path = "../html-node-core" }
+html-node-macro = { version = "0.2", path = "../html-node-macro" }
 
 
 [dev-dependencies]
@@ -36,5 +36,5 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [features]
 axum = ["html-node-core/axum"]
-typed = ["html-node-core/typed", "html-node-macro/typed"]
 serde = ["html-node-core/serde"]
+typed = ["html-node-core/typed", "html-node-macro/typed"]
