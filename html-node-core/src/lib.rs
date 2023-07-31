@@ -21,6 +21,7 @@ use self::typed::TypedElement;
 
 /// An HTML node.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Node {
     /// A comment.
     ///
@@ -116,6 +117,7 @@ impl Display for Node {
 /// <!-- I'm a comment! -->
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Comment {
     /// The text of the comment.
     ///
@@ -137,6 +139,7 @@ impl Display for Comment {
 /// <!DOCTYPE html>
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Doctype {
     /// The value of the doctype.
     ///
@@ -160,6 +163,7 @@ impl Display for Doctype {
 /// </>
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Fragment {
     /// The children of the fragment.
     ///
@@ -185,6 +189,7 @@ impl Display for Fragment {
 /// </div>
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Element {
     /// The name of the element.
     ///
@@ -250,6 +255,7 @@ impl Display for Element {
 ///     I'm a text node!
 /// </div>
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Text {
     /// The text of the node.
     ///
@@ -274,6 +280,7 @@ impl Display for Text {
 /// [`UnsafeText`] is not escaped when rendered, and as such, can allow
 /// for XSS attacks. Use with caution!
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UnsafeText {
     /// The text of the node.
     pub text: String,
