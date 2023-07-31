@@ -75,7 +75,7 @@ pub enum Node {
 
 impl Node {
     /// A [`Node::Fragment`] with no children.
-    pub const NULL: Self = Self::Fragment(Fragment {
+    pub const EMPTY: Self = Self::Fragment(Fragment {
         children: Vec::new(),
     });
 
@@ -108,6 +108,12 @@ impl Display for Node {
             Self::Text(text) => text.fmt(f),
             Self::UnsafeText(unsafe_text) => unsafe_text.fmt(f),
         }
+    }
+}
+
+impl Default for Node {
+    fn default() -> Self {
+        Self::EMPTY
     }
 }
 
