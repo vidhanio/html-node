@@ -37,3 +37,4 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 [features]
 axum = ["html-node-core/axum"]
 typed = ["html-node-core/typed", "html-node-macro/typed"]
+serde = ["html-node-core/serde"]
