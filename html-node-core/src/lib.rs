@@ -98,6 +98,42 @@ where
     }
 }
 
+impl From<Comment> for Node {
+    fn from(comment: Comment) -> Self {
+        Self::Comment(comment)
+    }
+}
+
+impl From<Doctype> for Node {
+    fn from(doctype: Doctype) -> Self {
+        Self::Doctype(doctype)
+    }
+}
+
+impl From<Fragment> for Node {
+    fn from(fragment: Fragment) -> Self {
+        Self::Fragment(fragment)
+    }
+}
+
+impl From<Element> for Node {
+    fn from(element: Element) -> Self {
+        Self::Element(element)
+    }
+}
+
+impl From<Text> for Node {
+    fn from(text: Text) -> Self {
+        Self::Text(text)
+    }
+}
+
+impl From<UnsafeText> for Node {
+    fn from(text: UnsafeText) -> Self {
+        Self::UnsafeText(text)
+    }
+}
+
 impl Display for Node {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match &self {
@@ -139,21 +175,14 @@ impl Display for Comment {
     }
 }
 
-impl From<String> for Comment {
-    fn from(comment: String) -> Self {
-        Self { comment }
-    }
-}
-
-impl From<&str> for Comment {
-    fn from(comment: &str) -> Self {
-        comment.to_owned().into()
-    }
-}
-
-impl From<Comment> for Node {
-    fn from(comment: Comment) -> Self {
-        Self::Comment(comment)
+impl<C> From<C> for Comment
+where
+    C: Into<String>,
+{
+    fn from(comment: C) -> Self {
+        Self {
+            comment: comment.into(),
+        }
     }
 }
 
@@ -179,21 +208,14 @@ impl Display for Doctype {
     }
 }
 
-impl From<String> for Doctype {
-    fn from(syntax: String) -> Self {
-        Self { syntax }
-    }
-}
-
-impl From<&str> for Doctype {
-    fn from(syntax: &str) -> Self {
-        syntax.to_owned().into()
-    }
-}
-
-impl From<Doctype> for Node {
-    fn from(doctype: Doctype) -> Self {
-        Self::Doctype(doctype)
+impl<S> From<S> for Doctype
+where
+    S: Into<String>,
+{
+    fn from(syntax: S) -> Self {
+        Self {
+            syntax: syntax.into(),
+        }
     }
 }
 
@@ -220,12 +242,6 @@ pub struct Fragment {
 impl Display for Fragment {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write_children(f, &self.children, true)
-    }
-}
-
-impl From<Fragment> for Node {
-    fn from(fragment: Fragment) -> Self {
-        Self::Fragment(fragment)
     }
 }
 
@@ -296,12 +312,6 @@ impl Display for Element {
     }
 }
 
-impl From<Element> for Node {
-    fn from(element: Element) -> Self {
-        Self::Element(element)
-    }
-}
-
 /// A text node.
 ///
 /// ```html
@@ -327,21 +337,12 @@ impl Display for Text {
     }
 }
 
-impl From<String> for Text {
-    fn from(text: String) -> Self {
-        Self { text }
-    }
-}
-
-impl From<&str> for Text {
-    fn from(text: &str) -> Self {
-        text.to_owned().into()
-    }
-}
-
-impl From<Text> for Node {
-    fn from(text: Text) -> Self {
-        Self::Text(text)
+impl<T> From<T> for Text
+where
+    T: Into<String>,
+{
+    fn from(text: T) -> Self {
+        Self { text: text.into() }
     }
 }
 
@@ -364,21 +365,12 @@ impl Display for UnsafeText {
     }
 }
 
-impl From<String> for UnsafeText {
-    fn from(text: String) -> Self {
-        Self { text }
-    }
-}
-
-impl From<&str> for UnsafeText {
-    fn from(text: &str) -> Self {
-        text.to_owned().into()
-    }
-}
-
-impl From<UnsafeText> for Node {
-    fn from(text: UnsafeText) -> Self {
-        Self::UnsafeText(text)
+impl<T> From<T> for UnsafeText
+where
+    T: Into<String>,
+{
+    fn from(text: T) -> Self {
+        Self { text: text.into() }
     }
 }
 
