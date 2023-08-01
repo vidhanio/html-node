@@ -5,6 +5,7 @@ use std::{
 
 use axum::{extract::Query, routing::get, Router, Server};
 use html_node::{html, text, Node};
+use html_node_core::pretty::Pretty;
 
 #[tokio::main]
 async fn main() {
@@ -24,6 +25,7 @@ fn router() -> Router {
         .route("/about", get(about))
         .route("/contact", get(contact))
         .route("/greet", get(greet))
+        .route("/pretty", get(pretty))
 }
 
 fn layout(content: Node) -> Node {
@@ -89,4 +91,12 @@ async fn greet(Query(params): Query<HashMap<String, String>>) -> Node {
     layout(html! {
         <h1>{text!("hello, {name}")}!</h1>
     })
+}
+
+async fn pretty() -> Pretty {
+    Pretty(layout(html! {
+        <div>
+            <h1>Pretty</h1>
+        </div>
+    }))
 }

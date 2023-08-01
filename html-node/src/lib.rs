@@ -118,7 +118,9 @@ mod macros;
 #[cfg(feature = "typed")]
 pub mod typed;
 
-pub use html_node_core::{pretty, Comment, Doctype, Element, Fragment, Node, Text, UnsafeText};
+#[cfg(feature = "pretty")]
+pub use html_node_core::pretty;
+pub use html_node_core::{Comment, Doctype, Element, Fragment, Node, Text, UnsafeText};
 /// The HTML to [`Node`] macro.
 ///
 /// See the [crate-level documentation](crate) for more information.

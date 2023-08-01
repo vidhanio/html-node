@@ -2,7 +2,9 @@
 mod axum {
     use axum::response::{Html, IntoResponse, Response};
 
-    use crate::{pretty::Pretty, Node};
+    #[cfg(feature = "pretty")]
+    use crate::pretty::Pretty;
+    use crate::Node;
 
     impl IntoResponse for Node {
         fn into_response(self) -> Response {
@@ -10,6 +12,7 @@ mod axum {
         }
     }
 
+    #[cfg(feature = "pretty")]
     impl IntoResponse for Pretty {
         fn into_response(self) -> Response {
             Html(self.to_string()).into_response()
