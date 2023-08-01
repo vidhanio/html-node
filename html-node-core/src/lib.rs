@@ -9,6 +9,8 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 mod http;
+#[allow(missing_docs)]
+pub mod pretty;
 
 #[allow(missing_docs)]
 #[cfg(feature = "typed")]
