@@ -100,18 +100,3 @@ async fn pretty() -> Pretty {
         </div>
     }))
 }
-
-async fn css() -> Pretty {
-    Pretty(layout(html! {
-        { style! {
-            html {
-                margin: 0;
-                padding: 0;
-                height: 100vh;
-            }
-        } }
-        <div>
-            <h1>Pretty</h1>
-        </div>
-    }))
-}

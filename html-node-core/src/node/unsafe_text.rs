@@ -14,7 +14,7 @@ pub struct UnsafeText {
 }
 
 impl Display for UnsafeText {
-    /// Unformatted text.
+    /// Unescaped text.
     ///
     /// This string is **not** HTML encoded!
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {

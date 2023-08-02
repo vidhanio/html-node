@@ -11,7 +11,7 @@ pub struct Doctype {
     /// The value of the doctype.
     ///
     /// ```html
-    /// <!DOCTYPE synax>
+    /// <!DOCTYPE syntax>
     /// ```
     pub syntax: String,
 }

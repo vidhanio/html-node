@@ -1,15 +1,16 @@
 [package]
 name = "html-node-macro"
-authors.workspace = true
-categories.workspace = true
+
+authors.workspace     = true
+categories.workspace  = true
 description.workspace = true
-edition.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-license.workspace = true
-readme.workspace = true
-repository.workspace = true
-version.workspace = true
+edition.workspace     = true
+homepage.workspace    = true
+keywords.workspace    = true
+license.workspace     = true
+readme.workspace      = true
+repository.workspace  = true
+version.workspace     = true
 
     [package.metadata.docs.rs]
     all-features = true
@@ -19,12 +20,13 @@ version.workspace = true
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "1"
+proc-macro2             = "1"
 proc-macro2-diagnostics = { version = "0.10", default-features = false }
-quote = "1"
-rstml = { version = "0.11", default-features = false }
-syn = "2"
-syn_derive = { version = "0.1", optional = true }
+quote                   = "1"
+rstml                   = { version = "0.11", default-features = false }
+syn                     = "2"
+syn_derive              = { version = "0.1", optional = true }
 
 [features]
-typed = ["dep:syn_derive"]
+basic-css = []
+typed     = ["dep:syn_derive"]

@@ -7,27 +7,29 @@
 
 mod node_handlers;
 
-use std::{
-    collections::{HashMap, HashSet},
-    os::linux::raw,
-};
+use std::collections::{HashMap, HashSet};
 
 use node_handlers::{
     handle_block, handle_comment, handle_doctype, handle_element, handle_fragment, handle_raw_text,
     handle_text,
 };
 use proc_macro::TokenStream;
-use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
+use proc_macro2::{Ident, TokenStream as TokenStream2};
 use proc_macro2_diagnostics::Diagnostic;
-use quote::{quote, quote_spanned};
+use quote::quote;
+#[cfg(feature = "basic-css")]
+use quote::quote_spanned;
 use rstml::{node::Node, Parser, ParserConfig};
-use syn::{spanned::Spanned, Type};
+#[cfg(feature = "basic-css")]
+use syn::spanned::Spanned;
+use syn::Type;
 
 #[proc_macro]
 pub fn html(tokens: TokenStream) -> TokenStream {
     html_inner(tokens.into(), None)
 }
 
+#[cfg(feature = "basic-css")]
 #[proc_macro]
 pub fn style(tokens: TokenStream) -> TokenStream {
     style_inner(tokens.into())
@@ -178,11 +180,22 @@ fn tokenize_nodes(
     (token_streams, diagnostics)
 }
 
+/// Naive conversion of a rust token stream into css content.
+///
+/// Strips all whitespace from the given tokens, concatenates them into a
+/// single string and returns a token stream of the given css content
+/// wrapped in an HTML style tag.
+#[cfg(feature = "basic-css")]
 fn style_inner(tokens: TokenStream2) -> TokenStream {
     let span = tokens.span();
     let raw_css = tokens
         .into_iter()
-        .map(|t| t.to_string().split_whitespace().collect::<String>())
+        .map(|token_tree| {
+            token_tree
+                .to_string()
+                .split_whitespace()
+                .collect::<String>()
+        })
         .collect::<String>();
 
     quote_spanned! { span=>
