@@ -4,7 +4,7 @@ use std::{
 };
 
 use axum::{extract::Query, routing::get, Router, Server};
-use html_node::{html, text, Node};
+use html_node::{html, style, text, Node};
 use html_node_core::pretty::Pretty;
 
 #[tokio::main]
@@ -95,6 +95,21 @@ async fn greet(Query(params): Query<HashMap<String, String>>) -> Node {
 
 async fn pretty() -> Pretty {
     Pretty(layout(html! {
+        <div>
+            <h1>Pretty</h1>
+        </div>
+    }))
+}
+
+async fn css() -> Pretty {
+    Pretty(layout(html! {
+        { style! {
+            html {
+                margin: 0;
+                padding: 0;
+                height: 100vh;
+            }
+        } }
         <div>
             <h1>Pretty</h1>
         </div>

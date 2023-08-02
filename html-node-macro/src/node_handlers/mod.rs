@@ -5,7 +5,7 @@ use std::collections::{HashMap, HashSet};
 
 use proc_macro2::{Ident, Literal, TokenStream as TokenStream2};
 use proc_macro2_diagnostics::{Diagnostic, SpanDiagnosticExt};
-use quote::{quote, ToTokens};
+use quote::{quote, quote_spanned, ToTokens};
 use rstml::node::{
     KeyedAttribute, NodeAttribute, NodeBlock, NodeComment, NodeDoctype, NodeElement, NodeFragment,
     NodeName, NodeText, RawText,

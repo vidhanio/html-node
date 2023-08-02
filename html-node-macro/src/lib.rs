@@ -7,22 +7,30 @@
 
 mod node_handlers;
 
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    os::linux::raw,
+};
 
 use node_handlers::{
     handle_block, handle_comment, handle_doctype, handle_element, handle_fragment, handle_raw_text,
     handle_text,
 };
 use proc_macro::TokenStream;
-use proc_macro2::{Ident, TokenStream as TokenStream2};
+use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 use proc_macro2_diagnostics::Diagnostic;
-use quote::quote;
+use quote::{quote, quote_spanned};
 use rstml::{node::Node, Parser, ParserConfig};
-use syn::Type;
+use syn::{spanned::Spanned, Type};
 
 #[proc_macro]
 pub fn html(tokens: TokenStream) -> TokenStream {
     html_inner(tokens.into(), None)
+}
+
+#[proc_macro]
+pub fn style(tokens: TokenStream) -> TokenStream {
+    style_inner(tokens.into())
 }
 
 #[cfg(feature = "typed")]
@@ -168,4 +176,27 @@ fn tokenize_nodes(
     let diagnostics = diagnostics.into_iter().flatten().collect();
 
     (token_streams, diagnostics)
+}
+
+fn style_inner(tokens: TokenStream2) -> TokenStream {
+    let span = tokens.span();
+    let raw_css = tokens
+        .into_iter()
+        .map(|t| t.to_string().split_whitespace().collect::<String>())
+        .collect::<String>();
+
+    quote_spanned! { span=>
+        ::html_node::Node::Element(
+            ::html_node::Element {
+                name: ::std::convert::Into::<::std::string::String>::into("style"),
+                attributes: ::std::vec::Vec::new(),
+                children: ::std::option::Option::Some(
+                    ::std::vec![
+                        ::html_node::Node::UnsafeText(#raw_css.into())
+                    ]
+                )
+            }
+        )
+    }
+    .into()
 }

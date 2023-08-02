@@ -125,5 +125,7 @@ pub use html_node_core::{Comment, Doctype, Element, Fragment, Node, Text, Unsafe
 ///
 /// See the [crate-level documentation](crate) for more information.
 pub use html_node_macro::html;
+/// CSS to [`Node`] macro.
+pub use html_node_macro::style;
 
 pub use self::macros::*;
