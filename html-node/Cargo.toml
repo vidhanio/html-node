@@ -1,46 +1,46 @@
 [package]
 name = "html-node"
-
-documentation = "https://docs.rs/html-node"
-
-authors.workspace     = true
-categories.workspace  = true
+authors.workspace = true
+categories.workspace = true
 description.workspace = true
-edition.workspace     = true
-homepage.workspace    = true
-keywords.workspace    = true
-license.workspace     = true
-readme.workspace      = true
-repository.workspace  = true
-version.workspace     = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+documentation = "https://docs.rs/html-node"
 
     [package.metadata.docs.rs]
     all-features = true
     rustdoc-args = ["--cfg", "docsrs"]
 
+
 [[example]]
-name              = "axum"
+name = "axum"
 required-features = ["axum"]
 
 [[example]]
-name              = "typed_custom_attributes"
+name = "typed_custom_attributes"
 required-features = ["typed"]
 
 [[example]]
-name              = "styling"
+name  = "styling"
 required-features = ["basic-css"]
 
 [dependencies]
-html-node-core  = { version = "0.2", path = "../html-node-core" }
+html-node-core = { version = "0.2", path = "../html-node-core" }
 html-node-macro = { version = "0.2", path = "../html-node-macro" }
 
+
 [dev-dependencies]
-axum  = "0.6"
+axum = "0.6"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [features]
-axum      = ["html-node-core/axum"]
+axum = ["html-node-core/axum"]
 basic-css = ["html-node-macro/basic-css"]
-pretty    = ["html-node-core/pretty"]
-serde     = ["html-node-core/serde"]
-typed     = ["html-node-core/typed", "html-node-macro/typed"]
+pretty = ["html-node-core/pretty"]
+serde = ["html-node-core/serde"]
+typed = ["html-node-core/typed", "html-node-macro/typed"]
