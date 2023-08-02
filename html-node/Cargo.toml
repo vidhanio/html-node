@@ -30,8 +30,8 @@ name  = "styling"
 required-features = ["basic-css"]
 
 [dependencies]
-html-node-core = { version = "0.2", path = "../html-node-core" }
-html-node-macro = { version = "0.2", path = "../html-node-macro" }
+html-node-core = { path = "../html-node-core" }
+html-node-macro = { path = "../html-node-macro" }
 
 
 [dev-dependencies]
