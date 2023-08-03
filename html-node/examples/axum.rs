@@ -4,7 +4,7 @@ use std::{
 };
 
 use axum::{extract::Query, routing::get, Router, Server};
-use html_node::{html, text, Node};
+use html_node::{html, style, text, Node};
 use html_node_core::pretty::Pretty;
 
 #[tokio::main]
