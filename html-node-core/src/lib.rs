@@ -8,14 +8,23 @@
 #![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
+/// HTTP Server integrations.
 mod http;
 
-#[allow(missing_docs)]
+/// [`crate::Node`] variant definitions.
+mod node;
+
+/// Pretty printing utilities.
+#[cfg(feature = "pretty")]
+pub mod pretty;
+
+/// Typed HTML Nodes.
 #[cfg(feature = "typed")]
 pub mod typed;
 
 use std::fmt::{self, Display, Formatter};
 
+pub use self::node::*;
 #[cfg(feature = "typed")]
 use self::typed::TypedElement;
 
@@ -84,17 +93,18 @@ impl Node {
     pub fn from_typed<E: TypedElement>(element: E, children: Option<Vec<Self>>) -> Self {
         element.into_node(children)
     }
+
+    /// Wrap the node in a pretty-printing wrapper.
+    #[cfg(feature = "pretty")]
+    #[must_use]
+    pub fn pretty(self) -> pretty::Pretty {
+        self.into()
+    }
 }
 
-impl<I, N> From<I> for Node
-where
-    I: IntoIterator<Item = N>,
-    N: Into<Self>,
-{
-    fn from(iter: I) -> Self {
-        Self::Fragment(Fragment {
-            children: iter.into_iter().map(Into::into).collect(),
-        })
+impl Default for Node {
+    fn default() -> Self {
+        Self::EMPTY
     }
 }
 
@@ -111,226 +121,48 @@ impl Display for Node {
     }
 }
 
-impl Default for Node {
-    fn default() -> Self {
-        Self::EMPTY
+impl<I, N> From<I> for Node
+where
+    I: IntoIterator<Item = N>,
+    N: Into<Self>,
+{
+    fn from(iter: I) -> Self {
+        Self::Fragment(iter.into())
     }
 }
 
-/// A comment.
-///
-/// ```html
-/// <!-- I'm a comment! -->
-/// ```
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Comment {
-    /// The text of the comment.
-    ///
-    /// ```html
-    /// <!-- comment -->
-    /// ```
-    pub comment: String,
-}
-
-impl Display for Comment {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "<!-- {} -->", self.comment)
+impl From<Comment> for Node {
+    fn from(comment: Comment) -> Self {
+        Self::Comment(comment)
     }
 }
 
-/// A doctype.
-///
-/// ```html
-/// <!DOCTYPE html>
-/// ```
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Doctype {
-    /// The value of the doctype.
-    ///
-    /// ```html
-    /// <!DOCTYPE synax>
-    /// ```
-    pub syntax: String,
-}
-
-impl Display for Doctype {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "<!DOCTYPE {}>", self.syntax)
+impl From<Doctype> for Node {
+    fn from(doctype: Doctype) -> Self {
+        Self::Doctype(doctype)
     }
 }
 
-/// A fragment.
-///
-/// ```html
-/// <>
-///     I'm in a fragment!
-/// </>
-/// ```
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Fragment {
-    /// The children of the fragment.
-    ///
-    /// ```html
-    /// <>
-    ///     <!-- I'm a child! -->
-    ///     <child>I'm another child!</child>
-    /// </>
-    pub children: Vec<Node>,
-}
-
-impl Display for Fragment {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write_children(f, &self.children, true)
+impl From<Fragment> for Node {
+    fn from(fragment: Fragment) -> Self {
+        Self::Fragment(fragment)
     }
 }
 
-/// An element.
-///
-/// ```html
-/// <div class="container">
-///     I'm in an element!
-/// </div>
-/// ```
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Element {
-    /// The name of the element.
-    ///
-    /// ```html
-    /// <name>
-    /// ```
-    pub name: String,
-
-    /// The attributes of the element.
-    ///
-    /// ```html
-    /// <div attribute="value">
-    /// ```
-    pub attributes: Vec<(String, Option<String>)>,
-
-    /// The children of the element.
-    ///
-    /// ```html
-    /// <div>
-    ///     <!-- I'm a child! -->
-    ///     <child>I'm another child!</child>
-    /// </div>
-    /// ```
-    pub children: Option<Vec<Node>>,
-}
-
-impl Element {
-    /// Create a new [`Element`] from a [`TypedElement`].
-    #[cfg(feature = "typed")]
-    pub fn from_typed<E: TypedElement>(element: E, children: Option<Vec<Node>>) -> Self {
-        element.into_element(children)
+impl From<Element> for Node {
+    fn from(element: Element) -> Self {
+        Self::Element(element)
     }
 }
 
-impl Display for Element {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "<{}", self.name)?;
-
-        for (key, value) in &self.attributes {
-            write!(f, " {key}")?;
-
-            if let Some(value) = value {
-                let encoded_value = html_escape::encode_double_quoted_attribute(value);
-                write!(f, r#"="{encoded_value}""#)?;
-            }
-        }
-        write!(f, ">")?;
-
-        if let Some(children) = &self.children {
-            write_children(f, children, false)?;
-
-            write!(f, "</{}>", self.name)?;
-        };
-
-        Ok(())
+impl From<Text> for Node {
+    fn from(text: Text) -> Self {
+        Self::Text(text)
     }
 }
 
-/// A text node.
-///
-/// ```html
-/// <div>
-///     I'm a text node!
-/// </div>
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Text {
-    /// The text of the node.
-    ///
-    /// ```html
-    /// <div>
-    ///     text
-    /// </div>
-    pub text: String,
-}
-
-impl Display for Text {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let encoded_value = html_escape::encode_text_minimal(&self.text);
-        write!(f, "{encoded_value}")
+impl From<UnsafeText> for Node {
+    fn from(text: UnsafeText) -> Self {
+        Self::UnsafeText(text)
     }
-}
-
-/// An unsafe text node.
-///
-/// # Warning
-///
-/// [`UnsafeText`] is not escaped when rendered, and as such, can allow
-/// for XSS attacks. Use with caution!
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct UnsafeText {
-    /// The text of the node.
-    pub text: String,
-}
-
-impl Display for UnsafeText {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.text)
-    }
-}
-
-/// Writes the children of a node.
-///
-/// If the formatter is in alternate mode, then the children are put on their
-/// own lines.
-///
-/// If alternate mode is enabled and `is_fragment` is false, then each line
-/// is indented by 4 spaces.
-fn write_children(f: &mut Formatter<'_>, children: &[Node], is_fragment: bool) -> fmt::Result {
-    if f.alternate() {
-        let mut children_iter = children.iter();
-
-        if is_fragment {
-            if let Some(first_child) = children_iter.next() {
-                write!(f, "{first_child:#}")?;
-
-                for child in children_iter {
-                    write!(f, "\n{child:#}")?;
-                }
-            }
-        } else {
-            for child_str in children_iter.map(|child| format!("{child:#}")) {
-                for line in child_str.lines() {
-                    write!(f, "\n    {line}")?;
-                }
-            }
-
-            // exit inner block
-            writeln!(f)?;
-        }
-    } else {
-        for child in children {
-            child.fmt(f)?;
-        }
-    }
-    Ok(())
 }

@@ -23,6 +23,7 @@ html-escape = "0.2"
 paste = "1.0.14"
 
 [features]
-axum = ["dep:axum"]
-typed = []
-serde = ["dep:serde"]
+axum   = ["dep:axum"]
+pretty = []
+serde  = ["dep:serde"]
+typed  = []

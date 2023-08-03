@@ -67,6 +67,13 @@
 //!
 //! ## Pretty-Printing
 //!
+//! Pretty-printing is supported by default when formatting a [`Node`] using the
+//! alternate formatter, specified by a `#` in the format string.
+//!
+//! If you want to avoid specifying the alternate formatter, enabling the
+//! `pretty` feature will provide a convenience method [`Node::pretty()`] that
+//! returns a wrapper around the node that will always be pretty-printed.
+//!
 //! ```rust
 //! use html_node::{html, text};
 //!
@@ -100,10 +107,25 @@
 //! </div>\
 //! ";
 //!
-//! // note the `#` in the format string, which enables pretty-printing
+//! // Note the `#` in the format string, which enables pretty-printing
 //! let formatted_html = format!("{html:#}");
 //!
 //! assert_eq!(formatted_html, expected);
+//!
+//! # #[cfg(feature = "pretty")]
+//! # {
+//! // Wrap the HTML node in a pretty-printing wrapper.
+//! let pretty = html.pretty();
+//!
+//! // Get the pretty-printed HTML as a string by invoking the [`Display`][std::fmt::Display] trait.
+//! let pretty_html_string = pretty.to_string();
+//! // Note the '#' is not required here.
+//! let pretty_html_format = format!("{pretty}");
+//!
+//! assert_eq!(pretty_html_string, expected);
+//! assert_eq!(pretty_html_format, expected);
+//! assert_eq!(pretty_html_string, pretty_html_format);
+//! # }
 //! ```
 
 #![warn(clippy::cargo)]
@@ -118,6 +140,8 @@ mod macros;
 #[cfg(feature = "typed")]
 pub mod typed;
 
+#[cfg(feature = "pretty")]
+pub use html_node_core::pretty;
 pub use html_node_core::{Comment, Doctype, Element, Fragment, Node, Text, UnsafeText};
 /// The HTML to [`Node`] macro.
 ///
