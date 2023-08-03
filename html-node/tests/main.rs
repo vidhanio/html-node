@@ -124,32 +124,3 @@ fn pretty_printed_helper() {
 </div>"#;
     assert_eq!(expected, pretty_html.to_string());
 }
-
-#[cfg(feature = "basic-css")]
-#[test]
-fn css_style_macro() {
-    let style = html_node::style! {
-        #id {
-            outline-width: 5px;
-            outline-style: solid;
-            outline-color: #CCDDFF;
-        }
-        .class,div {
-            background-color: rgb(123, 253, 48);
-        }
-    };
-    let expected = "\
-        <style>\
-            #id{\
-                outline-width:5px;\
-                outline-style:solid;\
-                outline-color:#CCDDFF;\
-            }\
-            .class,div{\
-                background-color:rgb(123,253,48);\
-            }\
-        </style>\
-    ";
-
-    assert_eq!(style.to_string(), expected);
-}

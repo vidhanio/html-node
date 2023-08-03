@@ -17,22 +17,12 @@ use proc_macro::TokenStream;
 use proc_macro2::{Ident, TokenStream as TokenStream2};
 use proc_macro2_diagnostics::Diagnostic;
 use quote::quote;
-#[cfg(feature = "basic-css")]
-use quote::quote_spanned;
 use rstml::{node::Node, Parser, ParserConfig};
-#[cfg(feature = "basic-css")]
-use syn::spanned::Spanned;
 use syn::Type;
 
 #[proc_macro]
 pub fn html(tokens: TokenStream) -> TokenStream {
     html_inner(tokens.into(), None)
-}
-
-#[cfg(feature = "basic-css")]
-#[proc_macro]
-pub fn style(tokens: TokenStream) -> TokenStream {
-    style_inner(tokens.into())
 }
 
 #[cfg(feature = "typed")]
@@ -178,38 +168,4 @@ fn tokenize_nodes(
     let diagnostics = diagnostics.into_iter().flatten().collect();
 
     (token_streams, diagnostics)
-}
-
-/// Naive conversion of a rust token stream into css content.
-///
-/// Strips all whitespace from the given tokens, concatenates them into a
-/// single string and returns a token stream of the given css content
-/// wrapped in an HTML style tag.
-#[cfg(feature = "basic-css")]
-fn style_inner(tokens: TokenStream2) -> TokenStream {
-    let span = tokens.span();
-    let raw_css = tokens
-        .into_iter()
-        .map(|token_tree| {
-            token_tree
-                .to_string()
-                .split_whitespace()
-                .collect::<String>()
-        })
-        .collect::<String>();
-
-    quote_spanned! { span=>
-        ::html_node::Node::Element(
-            ::html_node::Element {
-                name: ::std::convert::Into::<::std::string::String>::into("style"),
-                attributes: ::std::vec::Vec::new(),
-                children: ::std::option::Option::Some(
-                    ::std::vec![
-                        ::html_node::Node::UnsafeText(#raw_css.into())
-                    ]
-                )
-            }
-        )
-    }
-    .into()
 }

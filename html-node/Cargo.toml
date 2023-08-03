@@ -25,10 +25,6 @@ required-features = ["axum"]
 name = "typed_custom_attributes"
 required-features = ["typed"]
 
-[[example]]
-name  = "styling"
-required-features = ["basic-css"]
-
 [dependencies]
 html-node-core = { path = "../html-node-core" }
 html-node-macro = { path = "../html-node-macro" }
@@ -40,7 +36,6 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [features]
 axum = ["html-node-core/axum"]
-basic-css = ["html-node-macro/basic-css"]
 pretty = ["html-node-core/pretty"]
 serde = ["html-node-core/serde"]
 typed = ["html-node-core/typed", "html-node-macro/typed"]

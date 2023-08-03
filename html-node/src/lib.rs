@@ -147,17 +147,5 @@ pub use html_node_core::{Comment, Doctype, Element, Fragment, Node, Text, Unsafe
 ///
 /// See the [crate-level documentation](crate) for more information.
 pub use html_node_macro::html;
-/// Experimental proc-macro allowing for the direct insertion of CSS into a
-/// [`Node`].
-///
-/// This is a partial work-around for the fact that parsing raw CSS into a Rust
-/// token-stream will clobber the CSS syntax, making it unparseable by the
-/// browser, and leaving content unstyled.
-///
-/// See the [styling example](../html-node/styling.rs) for more information on
-/// how styles are parsed by this library and how the [`style!()] macro is used
-/// to work-around some of the inevitable shortcomings.
-#[cfg(feature = "basic-css")]
-pub use html_node_macro::style;
 
 pub use self::macros::*;
