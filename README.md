@@ -9,6 +9,11 @@ A HTML to node macro powered by [rstml](https://github.com/rs-tml/rstml).
 - Customizable compile-time type-checked elements and attributes ([docs](https://docs.rs/html-node/latest/html_node/typed/index.html))
   - completely optional, and can be mixed with untyped elements when needed!
 
+## Projects Using `html-node`
+
+- [vidhan.io](https://github.com/vidhanio/site)
+  - `html-node` used alongside `axum` and `tree-sitter` for a personal site.
+
 ## Example
 
 ```rust
