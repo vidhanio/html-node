@@ -1,6 +1,6 @@
 # `html-node`
 
-A HTML to node macro powered by [rstml](https://github.com/rs-tml/rstml).
+HTML nodes in Rust. \[powered by [rstml](https://github.com/rs-tml/rstml)\].
 
 ## Features
 
