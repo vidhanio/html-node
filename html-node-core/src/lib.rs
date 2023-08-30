@@ -11,7 +11,7 @@
 /// HTTP Server integrations.
 mod http;
 
-/// [`crate::Node`] variant definitions.
+/// [`Node`] variant definitions.
 mod node;
 
 /// Pretty printing utilities.
@@ -84,9 +84,7 @@ pub enum Node {
 
 impl Node {
     /// A [`Node::Fragment`] with no children.
-    pub const EMPTY: Self = Self::Fragment(Fragment {
-        children: Vec::new(),
-    });
+    pub const EMPTY: Self = Self::Fragment(Fragment::EMPTY);
 
     /// Create a new [`Node`] from a [`TypedElement`].
     #[cfg(feature = "typed")]
@@ -99,6 +97,98 @@ impl Node {
     #[must_use]
     pub fn pretty(self) -> pretty::Pretty {
         self.into()
+    }
+
+    /// Borrow the children of the node, if it is an element (with children) or
+    /// a fragment.
+    #[must_use]
+    pub fn as_children(&self) -> Option<&[Self]> {
+        match self {
+            Self::Fragment(fragment) => Some(&fragment.children),
+            Self::Element(element) => element.children.as_deref(),
+            _ => None,
+        }
+    }
+
+    /// Iterate over the children of the node.
+    pub fn children_iter(&self) -> impl Iterator<Item = &Self> {
+        self.as_children().unwrap_or_default().iter()
+    }
+
+    /// The children of the node, if it is an element (with children) or
+    /// a fragment.
+    #[must_use]
+    pub fn children(self) -> Option<Vec<Self>> {
+        match self {
+            Self::Fragment(fragment) => Some(fragment.children),
+            Self::Element(element) => element.children,
+            _ => None,
+        }
+    }
+
+    /// Iterate over the children of the node, consuming it.
+    pub fn into_children(self) -> impl Iterator<Item = Self> {
+        self.children().unwrap_or_default().into_iter()
+    }
+
+    /// Try to get this node as a [`Comment`], if it is one.
+    #[must_use]
+    pub const fn as_comment(&self) -> Option<&Comment> {
+        if let Self::Comment(comment) = self {
+            Some(comment)
+        } else {
+            None
+        }
+    }
+
+    /// Try to get this node as a [`Doctype`], if it is one.
+    #[must_use]
+    pub const fn as_doctype(&self) -> Option<&Doctype> {
+        if let Self::Doctype(doctype) = self {
+            Some(doctype)
+        } else {
+            None
+        }
+    }
+
+    /// Try to get this node as a [`Fragment`], if it is one.
+    #[must_use]
+    pub const fn as_fragment(&self) -> Option<&Fragment> {
+        if let Self::Fragment(fragment) = self {
+            Some(fragment)
+        } else {
+            None
+        }
+    }
+
+    /// Try to get this node as an [`Element`], if it is one.
+    #[must_use]
+    pub const fn as_element(&self) -> Option<&Element> {
+        if let Self::Element(element) = self {
+            Some(element)
+        } else {
+            None
+        }
+    }
+
+    /// Try to get this node as a [`Text`], if it is one.
+    #[must_use]
+    pub const fn as_text(&self) -> Option<&Text> {
+        if let Self::Text(text) = self {
+            Some(text)
+        } else {
+            None
+        }
+    }
+
+    /// Try to get this node as an [`UnsafeText`], if it is one.
+    #[must_use]
+    pub const fn as_unsafe_text(&self) -> Option<&UnsafeText> {
+        if let Self::UnsafeText(text) = self {
+            Some(text)
+        } else {
+            None
+        }
     }
 }
 

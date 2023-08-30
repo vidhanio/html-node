@@ -23,6 +23,19 @@ pub struct Fragment {
     pub children: Vec<Node>,
 }
 
+impl Fragment {
+    /// A fragment with no children.
+    pub const EMPTY: Self = Self {
+        children: Vec::new(),
+    };
+}
+
+impl Default for Fragment {
+    fn default() -> Self {
+        Self::EMPTY
+    }
+}
+
 impl Display for Fragment {
     /// Format the fragment's childrent as HTML elements.
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {

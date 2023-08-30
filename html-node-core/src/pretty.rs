@@ -7,6 +7,20 @@ use crate::Node;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Pretty(pub Node);
 
+impl Pretty {
+    /// Extract the inner node.
+    #[must_use]
+    pub fn into_inner(self) -> Node {
+        self.0
+    }
+
+    /// Borrow the inner node.
+    #[must_use]
+    pub const fn as_inner(&self) -> &Node {
+        &self.0
+    }
+}
+
 impl Display for Pretty {
     /// Format as a pretty printed HTML node.
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
