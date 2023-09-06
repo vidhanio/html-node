@@ -51,7 +51,7 @@ pub fn handle_element(
             let extensions = extensions.into_iter().map(|(type_, attributes)| {
                 quote! {
                     ::html_node::typed::TypedAttributes::into_attributes(
-                        #[allow(clippy::needless_update)]
+                        #[allow(clippy::needless_update, clippy::unnecessary_struct_initialization)]
                         #type_ {
                             #(#attributes,)*
                             ..::std::default::Default::default()
@@ -77,7 +77,7 @@ pub fn handle_element(
                     type ElementAttributes = <#name as ::html_node::typed::TypedElement>::Attributes;
                     <#name as ::html_node::typed::TypedElement>::into_node(
                         <#name as ::html_node::typed::TypedElement>::from_attributes(
-                            #[allow(clippy::needless_update)]
+                            #[allow(clippy::needless_update, clippy::unnecessary_struct_initialization)]
                             ElementAttributes {
                                 #(#type_checked,)*
                                 ..::std::default::Default::default()
