@@ -1,8 +1,6 @@
 use std::fmt::{self, Display, Formatter};
 
 use super::write_children;
-#[cfg(feature = "typed")]
-use crate::typed::TypedElement;
 use crate::Node;
 
 /// An element.
@@ -38,14 +36,6 @@ pub struct Element {
     /// </div>
     /// ```
     pub children: Option<Vec<Node>>,
-}
-
-#[cfg(feature = "typed")]
-impl Element {
-    /// Create a new [`Element`] from a [`TypedElement`].
-    pub fn from_typed<E: TypedElement>(element: E, children: Option<Vec<Node>>) -> Self {
-        element.into_element(children)
-    }
 }
 
 impl Display for Element {

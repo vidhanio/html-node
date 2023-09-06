@@ -5,7 +5,7 @@ pub mod elements;
 #[doc(hidden)]
 pub use paste::paste;
 
-use crate::{Element, Node};
+use crate::Node;
 
 /// A typed HTML element.
 pub trait TypedElement: Default {
@@ -18,16 +18,8 @@ pub trait TypedElement: Default {
         other_attributes: Vec<(String, Option<String>)>,
     ) -> Self;
 
-    /// Convert the typed element into an [`Element`].
-    fn into_element(self, children: Option<Vec<Node>>) -> Element;
-
     /// Convert the typed element into a [`Node`].
-    ///
-    /// By default, this is equivalent to calling [`TypedElement::into_element`]
-    /// and then just wrapping it in a [`Node::Element`].
-    fn into_node(self, children: Option<Vec<Node>>) -> Node {
-        Node::Element(self.into_element(children))
-    }
+    fn into_node(self, children: Option<Vec<Node>>) -> Node;
 }
 
 /// A typed set of HTML attributes.
@@ -107,15 +99,17 @@ macro_rules! typed_element {
                 Self { attributes, other_attributes }
             }
 
-            fn into_element(mut self, children: ::std::option::Option<::std::vec::Vec<$crate::Node>>) -> $crate::Element {
+            fn into_node(mut self, children: ::std::option::Option<::std::vec::Vec<$crate::Node>>) -> $crate::Node {
                 let mut attributes = $crate::typed::TypedAttributes::into_attributes(self.attributes);
                 attributes.append(&mut self.other_attributes);
 
-                $crate::Element {
-                    name: ::std::convert::From::from($crate::typed_element!(@NAME_STR $ElementName$(($name))?)),
-                    attributes,
-                    children,
-                }
+                $crate::Node::Element(
+                    $crate::Element {
+                        name: ::std::convert::From::from($crate::typed_element!(@NAME_STR $ElementName$(($name))?)),
+                        attributes,
+                        children,
+                    }
+                )
             }
         }
     };
