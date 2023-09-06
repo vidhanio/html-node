@@ -9,9 +9,6 @@ use crate::{Element, Node};
 
 /// A typed HTML element.
 pub trait TypedElement: Default {
-    /// The name of the element.
-    const NAME: &'static str;
-
     /// The attributes of the element.
     type Attributes: TypedAttributes;
 
@@ -101,7 +98,6 @@ macro_rules! typed_element {
         }
 
         impl $crate::typed::TypedElement for $ElementName {
-            const NAME: &'static str = $crate::typed_element!(@NAME_STR $ElementName$(($name))?);
             type Attributes = $crate::typed_attributes!(@NAME ($ElementName) $([$AttributeName])?);
 
             fn from_attributes(
@@ -116,7 +112,7 @@ macro_rules! typed_element {
                 attributes.append(&mut self.other_attributes);
 
                 $crate::Element {
-                    name: Self::NAME.into(),
+                    name: ::std::convert::From::from($crate::typed_element!(@NAME_STR $ElementName$(($name))?)),
                     attributes,
                     children,
                 }
