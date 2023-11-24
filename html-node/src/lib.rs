@@ -128,12 +128,6 @@
 //! # }
 //! ```
 
-#![warn(clippy::cargo)]
-#![warn(clippy::nursery)]
-#![warn(clippy::pedantic)]
-#![warn(missing_copy_implementations)]
-#![warn(missing_debug_implementations)]
-#![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 mod macros;

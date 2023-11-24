@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use std::{
     collections::HashMap,
     net::{Ipv4Addr, SocketAddr},
@@ -16,7 +18,7 @@ async fn main() {
     Server::bind(&addr)
         .serve(router().into_make_service())
         .await
-        .unwrap()
+        .unwrap();
 }
 
 fn router() -> Router {
@@ -85,8 +87,7 @@ async fn contact() -> Node {
 async fn greet(Query(params): Query<HashMap<String, String>>) -> Node {
     let name = params
         .get("name")
-        .map(|name| name.as_str())
-        .unwrap_or("stranger");
+        .map_or("stranger", std::string::String::as_str);
 
     layout(html! {
         <h1>{text!("hello, {name}")}!</h1>

@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use html_node::{html, text, unsafe_text};
 
 fn main() {

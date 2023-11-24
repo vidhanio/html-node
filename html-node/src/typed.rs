@@ -67,11 +67,48 @@
 //! );
 
 #[allow(clippy::module_name_repetitions)]
-pub use html_node_core::typed::{elements, TypedAttributes, TypedElement};
+pub use html_node_core::typed::{elements, Attribute, TypedAttributes, TypedElement};
 /// Make a typed set of HTML attributes.
 ///
 /// Used internally by [`element!`].
 pub use html_node_core::typed_attributes as attributes;
+/// Make a typed HTML node.
+///
+/// # Examples
+///
+/// ## Passing Type-Checking
+///
+/// ```rust
+/// use html_node::typed::{self, elements::*};
+///
+/// typed::component! {
+///     CustomBody {
+///         r: u8,
+///         g: u8,
+///         b: u8,
+///         width: i32,
+///     };
+///
+///     |CustomBodyAttributes { r, g, b, width }, _, children| typed::html! {
+///         <div style={format!("background-color: rgb({r}, {g}, {b}); width: {width}px;")}>
+///             { children }
+///         </div>
+///     }
+/// }
+///
+/// let html = typed::html! {
+///     <CustomBody component r=255 g=0 b=0 width=100>"Hello, world!"</CustomBody>
+/// };
+///
+/// let expected = "\
+/// <div style=\"background-color: rgb(255, 0, 0); width: 100px;\">\
+///     Hello, world!\
+/// </div>\
+/// ";
+///
+/// assert_eq!(html.to_string(), expected);
+/// ```
+pub use html_node_core::typed_component as component;
 /// Make a typed element.
 ///
 /// # Examples
@@ -132,16 +169,16 @@ pub use html_node_core::typed_attributes as attributes;
 /// ## Generated With Custom Attributes
 ///
 /// ```rust
-/// use html_node::typed::{self, TypedAttributes};
+/// use html_node::typed::{self, Attribute, TypedAttributes};
 ///
 /// #[derive(Debug, Clone, Default)]
 /// struct CustomElementAttributes {
-///     custom_attr: Option<Option<String>>,
+///     custom_attr: Attribute<String>,
 /// }
 ///
 /// impl TypedAttributes for CustomElementAttributes {
 ///     fn into_attributes(self) -> Vec<(String, Option<String>)> {
-///         vec![self.custom_attr.map(|v| ("custom-attr".into(), v))]
+///         vec![self.custom_attr.into_option().map(|v| ("custom-attr".into(), v))]
 ///             .into_iter()
 ///             .flatten()
 ///             .collect()

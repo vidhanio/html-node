@@ -8,9 +8,9 @@ pub use paste::paste;
 use crate::Node;
 
 /// A typed HTML element.
-pub trait TypedElement: Default {
+pub trait TypedElement {
     /// The attributes of the element.
-    type Attributes: TypedAttributes;
+    type Attributes;
 
     /// Create an element from its attributes.
     fn from_attributes(
@@ -23,9 +23,42 @@ pub trait TypedElement: Default {
 }
 
 /// A typed set of HTML attributes.
-pub trait TypedAttributes: Default {
+pub trait TypedAttributes {
     /// Convert the typed attributes into a set of attributes.
     fn into_attributes(self) -> Vec<(String, Option<String>)>;
+}
+
+/// A typed attribute.
+#[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
+pub enum Attribute<T> {
+    /// The attribute is present and has a value.
+    ///
+    /// ```html
+    /// <div id="test"></div>
+    /// ```
+    Present(T),
+
+    /// The attribute is present but has no value.
+    ///
+    /// ```html
+    /// <div hidden></div>
+    /// ```
+    Empty,
+
+    /// The attribute is not present.
+    #[default]
+    Missing,
+}
+
+impl<T> Attribute<T> {
+    /// Convert the attribute into a double layered [`Option`].
+    pub fn into_option(self) -> Option<Option<T>> {
+        match self {
+            Self::Present(value) => Some(Some(value)),
+            Self::Empty => Some(None),
+            Self::Missing => None,
+        }
+    }
 }
 
 #[allow(missing_docs)]
@@ -81,7 +114,7 @@ macro_rules! typed_element {
             })?
         }
 
-        #[derive(::std::fmt::Debug, ::std::clone::Clone, ::std::default::Default)]
+        #[derive(::std::fmt::Debug, ::std::default::Default)]
         #[allow(non_camel_case_types)]
         #[allow(missing_docs)]
         $vis struct $ElementName {
@@ -133,7 +166,7 @@ macro_rules! typed_attributes {
 
         impl $crate::typed::TypedAttributes for $crate::typed_attributes!(@NAME $(($ElementName))? $([$AttributeName])?) {
             fn into_attributes(self) -> ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)> {
-                [$((::std::stringify!($attribute), self.$attribute.map(|opt| opt.map(|a| ::std::string::ToString::to_string(&a))))),*]
+                [$((::std::stringify!($attribute), self.$attribute.into_option().map(|opt| opt.map(|a| ::std::string::ToString::to_string(&a))))),*]
                     .into_iter()
                     .flat_map(|(key, maybe_value)| {
                         maybe_value.map(|value| (key.strip_prefix("r#").unwrap_or(key).replace('_', "-"), value))
@@ -155,10 +188,10 @@ macro_rules! typed_attributes {
         }
     } => {
         $crate::typed::paste! {
-            #[derive(::std::fmt::Debug, ::std::clone::Clone, ::std::default::Default)]
+            #[derive(::std::fmt::Debug, ::std::default::Default)]
             #[allow(missing_docs)]
             $vis struct [< $ElementName:camel Attributes >] {
-                $($vis $attribute: ::std::option::Option<::std::option::Option<$crate::typed_attributes!(@ATTR_TYPE $($atype)?)>>,)*
+                $($vis $attribute: $crate::typed::Attribute<$crate::typed_attributes!(@ATTR_TYPE $($atype)?)>),*
             }
         }
     };
@@ -167,12 +200,95 @@ macro_rules! typed_attributes {
             $($attribute:ident $(: $atype:ty)?),* $(,)?
         }
     } => {
-        #[derive(::std::fmt::Debug, ::std::clone::Clone, ::std::default::Default)]
+        #[derive(::std::fmt::Debug, ::std::default::Default)]
         #[allow(missing_docs)]
         $vis struct $AttributeName {
-            $($vis $attribute: ::std::option::Option<::std::option::Option<$crate::typed_attributes!(@ATTR_TYPE $($atype)?)>>,)*
+            $($vis $attribute: $crate::typed::Attribute<$crate::typed_attributes!(@ATTR_TYPE $($atype)?)>),*
         }
     };
     (@ATTR_TYPE $atype:ty) => {$atype};
     (@ATTR_TYPE) => {::std::string::String};
+}
+
+#[allow(missing_docs)]
+#[macro_export]
+macro_rules! typed_component_attributes {
+    {
+        $(($vise:vis $ElementName:ident))? $([$visa:vis $AttributeName:ident])? {
+            $($attribute:ident: $atype:ty),* $(,)?
+        }
+    } => {
+        $crate::typed_component_attributes!(@STRUCT $(($vise $ElementName))? $([$visa $AttributeName])? { $($attribute: $atype),* });
+    };
+    (($_vise:vis $_ElementName:ident) $([$_visa:vis $_AttributeName:ident])?) => {};
+    {
+        @STRUCT ($vis:vis $ElementName:ident) {
+            $($attribute:ident: $atype:ty),* $(,)?
+        }
+    } => {
+        $crate::typed::paste! {
+            #[derive(::std::fmt::Debug)]
+            #[allow(missing_docs)]
+            $vis struct [< $ElementName:camel Attributes >] {
+                $($vis $attribute: $atype),*
+            }
+        }
+    };
+    {
+        @STRUCT $(($_vis:vis $ElementName:ident))? [$vis:vis $AttributeName:ident] {
+            $($attribute:ident: $atype:ty),* $(,)?
+        }
+    } => {
+        #[derive(::std::fmt::Debug)]
+        #[allow(missing_docs)]
+        $vis struct $AttributeName {
+            $($vis $attribute: $atype),*
+        }
+    };
+}
+
+#[allow(missing_docs)]
+#[macro_export]
+macro_rules! typed_component {
+    (
+        $vis:vis $ElementName:ident $([$AttributeName:ident])? $({
+                $($attribute:ident $(: $atype:ty)?),* $(,)?
+        })?;
+
+        |$attributes:pat_param, $extra_attributes:pat_param, $children:pat_param| $body:expr
+    ) => {
+        $crate::typed_component_attributes!{
+            ($vis $ElementName) $([$vis $AttributeName])? $({
+                $($attribute $(: $atype)?),*
+            })?
+        }
+
+        #[derive(::std::fmt::Debug)]
+        #[allow(non_camel_case_types)]
+        #[allow(missing_docs)]
+        $vis struct $ElementName {
+            $vis attributes: <Self as $crate::typed::TypedElement>::Attributes,
+            $vis extra_attributes: ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)>,
+        }
+
+        impl $crate::typed::TypedElement for $ElementName {
+            type Attributes = $crate::typed_attributes!(@NAME ($ElementName) $([$AttributeName])?);
+
+            fn from_attributes(
+                attributes: Self::Attributes,
+                extra_attributes: ::std::vec::Vec<(::std::string::String, ::std::option::Option<::std::string::String>)>,
+            ) -> Self {
+                Self { attributes, extra_attributes }
+            }
+
+            fn into_node(self, $children: ::std::option::Option<::std::vec::Vec<$crate::Node>>) -> $crate::Node {
+                let $attributes = self.attributes;
+                let $extra_attributes = self.extra_attributes;
+
+                {
+                    $body
+                }
+            }
+        }
+    };
 }

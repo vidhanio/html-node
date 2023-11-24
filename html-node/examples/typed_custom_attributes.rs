@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use std::fmt::Display;
 
 use html_node::typed;
@@ -26,5 +28,5 @@ fn main() {
     assert_eq!(
         html.to_string(),
         r#"<custom-element location="1,2"></custom-element>"#
-    )
+    );
 }

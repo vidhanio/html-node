@@ -1,18 +1,31 @@
 use std::collections::{HashMap, HashSet};
 
-use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
+use proc_macro2::{Ident, Punct, Span, TokenStream as TokenStream2};
 use proc_macro2_diagnostics::{Diagnostic, SpanDiagnosticExt};
 use quote::{quote, ToTokens};
-use rstml::node::{KeyedAttribute, NodeElement, NodeName};
-use syn::{punctuated::Pair, spanned::Spanned, ExprPath, Type};
+use rstml::node::{KeyedAttribute, NodeElement, NodeName, NodeNameFragment};
+use syn::{
+    punctuated::{Pair, Punctuated},
+    spanned::Spanned,
+    ExprPath, Type,
+};
 
 use super::{handle_element_inner, node_name_to_literal};
 
 enum AttrType {
-    TypeChecked(TokenStream2),
-    Extension(Option<Type>, TokenStream2),
+    Component,
+    TypeChecked {
+        key: TokenStream2,
+        value: Option<TokenStream2>,
+    },
+    Extension {
+        ty: Option<Type>,
+        key: TokenStream2,
+        value: TokenStream2,
+    },
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn handle_element(
     void_elements: &HashSet<&str>,
     extensions: &HashMap<Ident, Option<Type>>,
@@ -24,36 +37,64 @@ pub fn handle_element(
                 .span()
                 .error("typed elements don't support block attributes");
 
-            (AttrType::TypeChecked(TokenStream2::new()), Some(diagnostic))
+            (
+                AttrType::TypeChecked {
+                    key: TokenStream2::new(),
+                    value: None,
+                },
+                Some(diagnostic),
+            )
         },
         |attr| handle_attribute(attr, extensions),
         |element, attributes, children| {
             let name = element.name();
 
-            let (type_checked, other, extensions) = attributes.into_iter().fold(
-                (Vec::new(), Vec::new(), HashMap::new()),
-                |(mut normals, mut others, mut extensions), attribute| {
+            let (
+                component,
+                (type_checked_keys, type_checked_values),
+                (other_keys, other_values),
+                extensions,
+            ) = attributes.into_iter().fold(
+                (
+                    false,
+                    (Vec::new(), Vec::new()),
+                    (Vec::new(), Vec::new()),
+                    HashMap::<_, (Vec<_>, Vec<_>)>::new(),
+                ),
+                |(mut component, mut type_checked, mut other, mut extension), attribute| {
                     match attribute {
-                        AttrType::TypeChecked(attribute) => normals.push(attribute),
-                        AttrType::Extension(type_, attribute) => match type_ {
-                            Some(type_) => extensions
-                                .entry(type_)
-                                .or_insert_with(Vec::new)
-                                .push(attribute),
-                            None => others.push(attribute),
-                        },
+                        AttrType::Component => component = true,
+                        AttrType::TypeChecked { key, value } => {
+                            type_checked.0.push(key);
+                            type_checked.1.push(value);
+                        }
+                        AttrType::Extension {
+                            ty: type_,
+                            key,
+                            value,
+                        } => {
+                            if let Some(type_) = type_ {
+                                let extensions_vecs = extension.entry(type_).or_default();
+
+                                extensions_vecs.0.push(key);
+                                extensions_vecs.1.push(value);
+                            } else {
+                                other.0.push(key);
+                                other.1.push(value);
+                            }
+                        }
                     }
 
-                    (normals, others, extensions)
+                    (component, type_checked, other, extension)
                 },
             );
 
-            let extensions = extensions.into_iter().map(|(type_, attributes)| {
+            let extensions = extensions.into_iter().map(|(type_, (keys, values))| {
                 quote! {
                     ::html_node::typed::TypedAttributes::into_attributes(
                         #[allow(clippy::needless_update, clippy::unnecessary_struct_initialization)]
                         #type_ {
-                            #(#attributes,)*
+                            #(#keys: #values,)*
                             ..::std::default::Default::default()
                         }
                     )
@@ -66,10 +107,34 @@ pub fn handle_element(
                     #(
                         v.append(&mut #extensions);
                     )*
-                    v.append(&mut ::std::vec![#(#other,)*]);
+                    v.append(&mut ::std::vec![#((#other_keys, #other_values),)*]);
 
                     v
                 }
+            };
+
+            let default = if component {
+                TokenStream2::new()
+            } else {
+                quote! {
+                    ..::std::default::Default::default()
+                }
+            };
+
+            let type_checked_values = if component {
+                Box::new(type_checked_values.into_iter().map(|value| {
+                    quote! {
+                        #value
+                    }
+                })) as Box<dyn Iterator<Item = _>>
+            } else {
+                Box::new(type_checked_values.into_iter().map(|value| {
+                    quote! {
+                        ::html_node::typed::Attribute::Present(
+                            #value
+                        )
+                    }
+                })) as Box<dyn Iterator<Item = _>>
             };
 
             quote! {
@@ -79,8 +144,8 @@ pub fn handle_element(
                         <#name as ::html_node::typed::TypedElement>::from_attributes(
                             #[allow(clippy::needless_update, clippy::unnecessary_struct_initialization)]
                             ElementAttributes {
-                                #(#type_checked,)*
-                                ..::std::default::Default::default()
+                                #(#type_checked_keys: #type_checked_values,)*
+                                #default
                             },
                             #extensions,
                         ),
@@ -95,151 +160,79 @@ pub fn handle_element(
     )
 }
 
-#[allow(clippy::too_many_lines)]
 fn handle_attribute(
     attribute: &KeyedAttribute,
     extensions: &HashMap<Ident, Option<Type>>,
 ) -> (AttrType, Option<Diagnostic>) {
-    let key = match &attribute.key {
+    let attr = match &attribute.key {
         NodeName::Block(block) => Err(block
             .span()
             .error("block attribute keys are not supported for typed elements")),
         NodeName::Path(path) => handle_path_attribute(path),
-        NodeName::Punctuated(puncutated) => {
-            if let Some(Pair::Punctuated(n, p)) = puncutated.pairs().next() {
-                let name = n.to_string();
-                if p.as_char() == '-' {
-                    extensions.get(&Ident::new(&name, Span::call_site())).map_or_else(|| {
-                        let underscored_name = puncutated
-                                .pairs()
-                                .map(|pair| match pair {
-                                    Pair::Punctuated(ident, punct) => {
-                                        if punct.as_char() == '-' {
-                                            Ok(format!("{ident}_"))
-                                        } else {
-                                            Err(punct.span().error("only hyphens can be converted to underscores in attribute names"))
-                                        }
-                                    }
-                                    Pair::End(ident) => Ok(ident.to_string()),
-                                })
-                                .collect::<Result<String, _>>();
+        NodeName::Punctuated(punctuated) => {
+            handle_punctuated_attribute(&attribute.key, punctuated, extensions)
+        }
+    };
 
-                        match underscored_name {
-                            Ok(underscored_name) => {
-                                let raw_ident =
-                                    Ident::new_raw(&underscored_name, puncutated.span());
-                                Ok(AttrType::TypeChecked(raw_ident.to_token_stream()))
-                            }
-                            Err(diagnostic) => Err(diagnostic),
+    let attr = match attr {
+        Ok(attr) => attr,
+        Err(diagnostic) => {
+            return (
+                AttrType::TypeChecked {
+                    key: TokenStream2::new(),
+                    value: None,
+                },
+                Some(diagnostic),
+            )
+        }
+    };
+
+    let attribute = match attr {
+        AttrType::Component => AttrType::Component,
+        AttrType::TypeChecked { key, .. } => {
+            let value = attribute
+                .value()
+                .map(|value| quote!(::std::convert::Into::into(#value)));
+
+            AttrType::TypeChecked { key, value }
+        }
+        AttrType::Extension { ty, key, .. } => {
+            if let Some(ty) = ty {
+                let value = attribute.value().map_or_else(
+                    || quote!(::html_node::typed::Attribute::Empty),
+                    |value| {
+                        quote! {
+                        ::html_node::typed::Attribute::Present(
+                        ::std::convert::Into::into(#value)
+                        )
                         }
-                    }, |type_| type_.as_ref().map_or_else(|| {
-                                let literal = node_name_to_literal(&attribute.key);
-                                let literal = quote!(::std::convert::Into::<::std::string::String>::into(#literal));
-                                Ok(AttrType::Extension(None, literal))
-                            }, |type_| {
-                                let underscored_name = puncutated
-                                .pairs()
-                                .map(|pair| match pair {
-                                    Pair::Punctuated(ident, punct) => {
-                                        if punct.as_char() == '-' {
-                                            Ok(format!("{ident}_"))
-                                        } else {
-                                            Err(punct.span().error("only hyphens can be converted to underscores in attribute names"))
-                                        }
-                                    }
-                                    Pair::End(ident) => Ok(ident.to_string()),
-                                })
-                                .collect::<Result<String, _>>();
+                    },
+                );
 
-                                match underscored_name {
-                                    Ok(underscored_name) => {
-                                        let raw_ident =
-                                            Ident::new_raw(&underscored_name, puncutated.span());
-                                        Ok(AttrType::Extension(
-                                            Some(type_.clone()),
-                                            raw_ident.to_token_stream(),
-                                        ))
-                                    }
-                                    Err(diagnostic) => Err(diagnostic),
-                                }
-                            }))
-                } else {
-                    Err(puncutated
-                        .span()
-                        .error("empty punctuated keys are not supported"))
+                AttrType::Extension {
+                    ty: Some(ty),
+                    key,
+                    value,
                 }
-            } else if let Some(Pair::End(ident)) = puncutated.pairs().next() {
-                Ok(AttrType::TypeChecked(ident.to_token_stream()))
             } else {
-                Err(puncutated
-                    .span()
-                    .error("empty punctuated keys are not supported"))
+                let value = attribute.value().map_or_else(
+                    || quote!(::std::option::Option::None),
+                    |value| {
+                        quote! {
+                        ::std::option::Option::Some(
+                        ::std::string::ToString::to_string(&#value),
+                        )
+                        }
+                    },
+                );
+
+                AttrType::Extension {
+                    ty: None,
+                    key,
+                    value,
+                }
             }
         }
-    };
-
-    let key = match key {
-        Ok(key) => key,
-        Err(diagnostic) => return (AttrType::TypeChecked(TokenStream2::new()), Some(diagnostic)),
-    };
-
-    let attribute = match key {
-        AttrType::TypeChecked(key) => {
-            let value = attribute.value().map_or_else(
-                || quote!(::std::option::Option::None),
-                |value| {
-                    quote! {
-                        ::std::option::Option::Some(
-                            ::std::convert::Into::into(#value),
-                        )
-                    }
-                },
-            );
-
-            AttrType::TypeChecked(quote! {
-                #key: ::std::option::Option::Some(#value)
-            })
-        }
-        AttrType::Extension(type_, key) => type_.map_or_else(
-            || {
-                let value = attribute.value().map_or_else(
-                    || quote!(::std::option::Option::None),
-                    |value| {
-                        quote! {
-                            ::std::option::Option::Some(
-                                ::std::string::ToString::to_string(&#value),
-                            )
-                        }
-                    },
-                );
-
-                AttrType::Extension(
-                    None,
-                    quote! {
-                        (#key, #value)
-                    },
-                )
-            },
-            |type_| {
-                let value = attribute.value().map_or_else(
-                    || quote!(::std::option::Option::None),
-                    |value| {
-                        quote! {
-                            ::std::option::Option::Some(
-                                ::std::convert::Into::into(#value),
-                            )
-                        }
-                    },
-                );
-
-                AttrType::Extension(
-                    Some(type_),
-                    quote! {
-                        #key: ::std::option::Option::Some(#value)
-                    },
-                )
-            },
-        ),
     };
 
     (attribute, None)
@@ -267,8 +260,94 @@ fn handle_path_attribute(path: &ExprPath) -> Result<AttrType, Diagnostic> {
 
         let ident = &segment.ident;
 
-        let ident = Ident::new_raw(&ident.to_string(), path.span());
+        if ident == &Ident::new("component", Span::call_site()) {
+            Ok(AttrType::Component)
+        } else {
+            let ident = Ident::new_raw(&ident.to_string(), path.span());
 
-        Ok(AttrType::TypeChecked(ident.to_token_stream()))
+            Ok(AttrType::TypeChecked {
+                key: ident.to_token_stream(),
+                value: None,
+            })
+        }
     }
+}
+
+fn handle_punctuated_attribute(
+    node_name: &NodeName,
+    punctuated: &Punctuated<NodeNameFragment, Punct>,
+    extensions: &HashMap<Ident, Option<Type>>,
+) -> Result<AttrType, Diagnostic> {
+    if let Some(Pair::Punctuated(n, p)) = punctuated.pairs().next() {
+        let name = n.to_string();
+        if p.as_char() == '-' {
+            extensions
+                .get(&Ident::new(&name, Span::call_site()))
+                .map_or_else(
+                    || {
+                        hyphenated_to_underscored(punctuated).map(|name| AttrType::TypeChecked {
+                            key: Ident::new_raw(&name, punctuated.span()).to_token_stream(),
+                            value: None,
+                        })
+                    },
+                    |type_| {
+                        type_.as_ref().map_or_else(
+                            || {
+                                let literal = node_name_to_literal(node_name);
+                                Ok(AttrType::Extension {
+                                    ty: None,
+                                    key: quote! {
+                                        ::std::convert::Into::<::std::string::String>::into(#literal)
+                                    },
+                                    value: TokenStream2::new(),
+                                })
+                            },
+                            |type_| {
+                                hyphenated_to_underscored(punctuated).map(|name| {
+                                    AttrType::Extension {
+                                        ty: Some(type_.clone()),
+                                        key: Ident::new_raw(&name, punctuated.span())
+                                            .to_token_stream(),
+                                        value: TokenStream2::new(),
+                                    }
+                                })
+                            },
+                        )
+                    },
+                )
+        } else {
+            Err(punctuated
+                .span()
+                .error("empty punctuated keys are not supported"))
+        }
+    } else if let Some(Pair::End(ident)) = punctuated.pairs().next() {
+        Ok(AttrType::TypeChecked {
+            key: ident.to_token_stream(),
+            value: None,
+        })
+    } else {
+        Err(punctuated
+            .span()
+            .error("empty punctuated keys are not supported"))
+    }
+}
+
+fn hyphenated_to_underscored(
+    punctuated: &Punctuated<NodeNameFragment, Punct>,
+) -> Result<String, Diagnostic> {
+    punctuated
+        .pairs()
+        .map(|pair| match pair {
+            Pair::Punctuated(ident, punct) => {
+                if punct.as_char() == '-' {
+                    Ok(format!("{ident}_"))
+                } else {
+                    Err(punct
+                        .span()
+                        .error("only hyphens can be converted to underscores in attribute names"))
+                }
+            }
+            Pair::End(ident) => Ok(ident.to_string()),
+        })
+        .collect()
 }

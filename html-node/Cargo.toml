@@ -1,16 +1,16 @@
 [package]
-name = "html-node"
 authors.workspace = true
 categories.workspace = true
 description.workspace = true
+documentation = "https://docs.rs/html-node"
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 license.workspace = true
+name = "html-node"
 readme.workspace = true
 repository.workspace = true
 version.workspace = true
-documentation = "https://docs.rs/html-node"
 
     [package.metadata.docs.rs]
     all-features = true
@@ -26,8 +26,8 @@ name = "typed_custom_attributes"
 required-features = ["typed"]
 
 [dependencies]
-html-node-core = { version = "0.4", path = "../html-node-core" }
-html-node-macro = { version = "0.4", path = "../html-node-macro" }
+html-node-core = { version = "0.5", path = "../html-node-core" }
+html-node-macro = { version = "0.5", path = "../html-node-macro" }
 
 
 [dev-dependencies]
@@ -39,3 +39,7 @@ axum = ["html-node-core/axum"]
 pretty = ["html-node-core/pretty"]
 serde = ["html-node-core/serde"]
 typed = ["html-node-core/typed", "html-node-macro/typed"]
+
+
+[lints]
+workspace = true

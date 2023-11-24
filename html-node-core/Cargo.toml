@@ -1,5 +1,4 @@
 [package]
-name = "html-node-core"
 authors.workspace = true
 categories.workspace = true
 description.workspace = true
@@ -7,6 +6,7 @@ edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 license.workspace = true
+name = "html-node-core"
 readme.workspace = true
 repository.workspace = true
 version.workspace = true
@@ -27,3 +27,6 @@ axum = ["dep:axum"]
 pretty = []
 serde = ["dep:serde"]
 typed = []
+
+[lints]
+workspace = true
