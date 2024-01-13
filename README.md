@@ -2,6 +2,10 @@
 
 HTML nodes in Rust. \[powered by [rstml](https://github.com/rs-tml/rstml)\].
 
+## Note
+
+If you want to use this purely for building websites in rust, consider using my other library, [hypertext](https://github.com/vidhanio/hypertext). It puts performance and type-checking first, and supports this crate's syntax as well as [maud](https://maud.lambda.xyz)'s syntax, which is much cleaner.
+
 ## Features
 
 - Text escaping
